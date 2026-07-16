@@ -106,11 +106,17 @@ def _render_look(story: Dict[str, Any], attention: Optional[float] = None) -> No
     elif story["victory"]:
         print("THE TRANSMISSION IS COMPLETE — Rejoyce those within the shell.")
     for s in story["stages"]:
-        ink = " ".join(f"{k}{_INK[v]}" for k, v in s["inked"].items())
-        marker = "  <— next beat" if nxt and s["name"] == nxt["stage"] else ""
         kind = "written" if s["fog"] < 0.3 else "UNWRITTEN"
-        loop = "  (you are going in circles)" if s["kairos"]["looping"] else ""
-        print(f"  {s['name']:<10} {kind:<9} [{ink}]{marker}{loop}")
+        parts = []
+        for k, v in s["inked"].items():
+            lean = s["lean"][k]
+            arrow = "" if kind == "written" else (
+                "↑" if lean > 0.15 else ("↓" if lean < -0.15 else "~"))
+            parts.append(f"{k}{_INK[v]}{arrow}")
+        marker = "  <— next beat" if nxt and s["name"] == nxt["stage"] else ""
+        loop = ("  (going in circles — the moment has come back around; read now)"
+                if s["kairos"]["looping"] else "")
+        print(f"  {s['name']:<10} {kind:<9} [{' '.join(parts)}]{marker}{loop}")
         if kind == "UNWRITTEN" and s["forbidden_masks"]:
             told = " · ".join(_mask_wants(s, m) for m in s["forbidden_masks"])
             print(f"             FORBIDDEN tellings: {told}")

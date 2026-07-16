@@ -327,12 +327,20 @@ class StorySession:
         stages = []
         for s in sorted(self.story.stages, key=lambda s: s.order):
             legal = self.verifier.legal_next_masks(s.name)
+            cluster = self.game.world.zones[s.name]
             stages.append({
                 "name": s.name,
                 "era": s.era,
                 "fog": s.fog,
                 "strands": [st.name for st in s.strands],
                 "inked": self.verifier.inked_strands(s.name),
+                # which way the live text is leaning right now — the visible
+                # shimmer of the page (deliberate, diegetic: reading the lean
+                # IS part of reading the book)
+                "lean": {
+                    st.name: round(float(cluster.role_bloch(st.name)[2]), 3)
+                    for st in s.strands
+                },
                 "effective_mask": self.verifier.effective_mask(s.name),
                 "canonical_mask": s.canonical_mask,
                 "forbidden_masks": list(s.forbidden_masks),
