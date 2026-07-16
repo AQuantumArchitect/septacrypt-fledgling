@@ -3,7 +3,8 @@
 You are the reader of a recovered, partly corrupted transmission: a
 seven-chapter book. The first four chapters (Egg, Gestation, Birth, Orbit)
 are already written. The last three (Aegis, Shepherd, Cleave) exist only as
-shimmering possibility — **you write them by reading them.**
+shimmering possibility — **you write them by observing them —
+and you can always READ the prose your observations have written.**
 
 ## Goal
 
@@ -29,7 +30,7 @@ corruption, not as a general undo.
 ```
 python -m septacrypt_fledgling play new [--seed 7]    start a game
 python -m septacrypt_fledgling play look              where the story stands
-python -m septacrypt_fledgling play read STAGE STRAND read one strand (the dice of the book)
+python -m septacrypt_fledgling play observe STAGE STRAND observe one strand (the dice of the book)
 python -m septacrypt_fledgling play wait [STEPS]      let the story drift (default 12)
 python -m septacrypt_fledgling play tell [VOICE]      hear the narrator (rasi, guard, seer, translator, paul)
 python -m septacrypt_fledgling play revive            after corruption: restore and retry
@@ -37,7 +38,8 @@ python -m septacrypt_fledgling play end               end the game
 ```
 
 Stage and strand names are exactly as shown by `play look`
-(e.g. `play read Aegis containment`).
+(e.g. `play observe Aegis containment`). `play web` opens the same game
+as a local web page — the full manuscript, playable.
 
 ## Reading the board
 

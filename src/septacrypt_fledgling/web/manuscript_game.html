@@ -166,7 +166,7 @@ window.SP = (function () {
         const leanTxt = !fog ? "" : lean > 0.15 ? "leans +" : lean < -0.15 ? "leans −" : "toss-up";
         html += `<div class="gp-strand"><div class="nm" title="${name}">${name}</div>` +
           `<div class="glyph ${cls}">${glyph}</div><div class="lean">${leanTxt}</div>` +
-          (fog ? `<button onclick="SP.read('${s.name}','${name}')">read</button>` : "") + `</div>`;
+          (fog ? `<button onclick="SP.read('${s.name}','${name}')">observe</button>` : "") + `</div>`;
       });
       html += `</div>`;
       if (fog && s.forbidden_masks.length)

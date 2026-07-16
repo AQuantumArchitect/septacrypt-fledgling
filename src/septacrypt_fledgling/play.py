@@ -45,11 +45,11 @@ def _server_alive(base: str) -> bool:
         return False
 
 
-def _spawn_server() -> str:
+def _spawn_server() -> tuple[str, int]:
     with socket.socket() as s:
         s.bind(("127.0.0.1", 0))
         port = s.getsockname()[1]
-    subprocess.Popen(
+    proc = subprocess.Popen(
         [sys.executable, "-m", "septacrypt_fledgling", "serve", "--port", str(port)],
         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
         start_new_session=True,
@@ -57,9 +57,31 @@ def _spawn_server() -> str:
     base = f"http://127.0.0.1:{port}"
     for _ in range(50):
         if _server_alive(base):
-            return base
+            return base, proc.pid
         time.sleep(0.2)
     raise SystemExit("could not start the game server")
+
+
+def _stop_server(state: Dict[str, Any]) -> None:
+    pid = state.get("server_pid")
+    if pid:
+        try:
+            os.kill(int(pid), 15)
+            time.sleep(0.3)
+        except (ProcessLookupError, PermissionError):
+            pass
+
+
+def _open_browser(url: str) -> None:
+    """Best-effort open, WSL-aware; always prints the URL as the fallback."""
+    for cmd in (["wslview", url], ["explorer.exe", url], ["xdg-open", url]):
+        try:
+            if subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                              timeout=10).returncode == 0:
+                return
+        except (FileNotFoundError, subprocess.TimeoutExpired):
+            continue
+    print("(could not open a browser automatically — paste the URL into one)")
 
 
 def _load() -> Dict[str, Any]:
@@ -128,18 +150,20 @@ def _render_look(story: Dict[str, Any], attention: Optional[float] = None) -> No
 
 # -- commands ----------------------------------------------------------------------
 def cmd_new(args) -> None:
-    base = None
+    base, pid = None, None
     if STATE_FILE.exists():
         old = json.loads(STATE_FILE.read_text())
         if _server_alive(old.get("base", "")):
-            base = old["base"]
-            _call(base, "DELETE", f"/v1/sessions/{old['session_id']}")
+            base, pid = old["base"], old.get("server_pid")
+            if old.get("session_id"):
+                _call(base, "DELETE", f"/v1/sessions/{old['session_id']}")
     if base is None:
-        base = _spawn_server()
+        base, pid = _spawn_server()
     r = _call(base, "POST", "/v1/sessions", {"story": "starpod", "seed": args.seed})
     if not r.get("ok"):
         raise SystemExit(f"error: {r['error']['message']}")
-    STATE_FILE.write_text(json.dumps({"base": base, "session_id": r["session_id"]}))
+    STATE_FILE.write_text(json.dumps(
+        {"base": base, "session_id": r["session_id"], "server_pid": pid}))
     print(f"A transmission crackles in. (seed {args.seed})")
     print("The first four chapters are already written. The last three are yours to read")
     print("into being — without ever writing a telling the Guard has forbidden.\n")
@@ -164,7 +188,7 @@ def cmd_read(args) -> None:
     ink = res["inked"][args.strand]
     outcome = {1: "it stands realized (+)", -1: "it reads lost/retold (-)",
                0: "the text still shimmers — nothing inked"}[ink]
-    print(f"You read {args.stage}.{args.strand}: {outcome}")
+    print(f"You observe {args.stage}.{args.strand}: {outcome}")
     if res["run_state"] == "corrupted":
         print()
     _render_look(r["story"])
@@ -203,20 +227,29 @@ def cmd_revive(args) -> None:
 
 
 def cmd_web(args) -> None:
-    """Start (or reuse) a server and open the game page in the browser."""
-    import webbrowser
+    """(Re)start the server on current code and open the game page.
 
-    base = None
+    Always restarts a server we spawned ourselves, so 'play web' after an
+    update never serves stale code."""
+    state: Dict[str, Any] = {}
     if STATE_FILE.exists():
-        st = json.loads(STATE_FILE.read_text())
-        if _server_alive(st.get("base", "")):
-            base = st["base"]
-    if base is None:
-        base = _spawn_server()
-        STATE_FILE.write_text(json.dumps({"base": base, "session_id": ""}))
+        state = json.loads(STATE_FILE.read_text())
+        _stop_server(state)
+    base, pid = _spawn_server()
+    state.update({"base": base, "server_pid": pid})
+    state.setdefault("session_id", "")
+    STATE_FILE.write_text(json.dumps(state))
     url = base + "/play"
     print(f"STAR POD is at {url}")
-    webbrowser.open(url)
+    _open_browser(url)
+
+
+def cmd_stop(args) -> None:
+    if STATE_FILE.exists():
+        _stop_server(json.loads(STATE_FILE.read_text()))
+        print("server stopped.")
+    else:
+        print("no server on record (try: pkill -f septacrypt_fledgling).")
 
 
 def cmd_end(args) -> None:
@@ -235,11 +268,13 @@ def main(argv=None) -> None:
     sub = parser.add_subparsers(dest="cmd", required=True)
     p = sub.add_parser("new"); p.add_argument("--seed", type=int, default=7); p.set_defaults(fn=cmd_new)
     p = sub.add_parser("look"); p.set_defaults(fn=cmd_look)
-    p = sub.add_parser("read"); p.add_argument("stage"); p.add_argument("strand"); p.set_defaults(fn=cmd_read)
+    for alias in ("observe", "read"):
+        p = sub.add_parser(alias); p.add_argument("stage"); p.add_argument("strand"); p.set_defaults(fn=cmd_read)
     p = sub.add_parser("wait"); p.add_argument("steps", type=int, nargs="?", default=12); p.set_defaults(fn=cmd_wait)
     p = sub.add_parser("tell"); p.add_argument("voice", nargs="?", default="rasi"); p.set_defaults(fn=cmd_tell)
     p = sub.add_parser("revive"); p.set_defaults(fn=cmd_revive)
     p = sub.add_parser("web"); p.set_defaults(fn=cmd_web)
+    p = sub.add_parser("stop"); p.set_defaults(fn=cmd_stop)
     p = sub.add_parser("end"); p.set_defaults(fn=cmd_end)
     args = parser.parse_args(argv)
     args.fn(args)

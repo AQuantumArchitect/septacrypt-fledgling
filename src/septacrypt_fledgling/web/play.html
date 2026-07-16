@@ -111,7 +111,7 @@
       <span style="flex:1"></span>
       <button onclick="restart()" title="Abandon and start over">↻ New game</button>
     </div>
-    <div id="narration"><h3>THE TELLING</h3><div id="ntrlog"></div></div>
+    <div id="narration"><h3>THE TELLING <a href="/play" style="float:right;color:var(--blue);font-size:12px;letter-spacing:0">open the full book (manuscript view) →</a></h3><div id="ntrlog"></div></div>
   </div>
 </main>
 <div id="toast"></div>
@@ -210,7 +210,7 @@ async function refresh() {
       const arrow = !fog ? "" : (lean > 0.15 ? "leans +" : (lean < -0.15 ? "leans −" : "toss-up"));
       html += `<div class="strand"><div class="name" title="${name}">${name}</div>` +
               `<div class="glyph ${cls}">${glyph}</div><div class="lean">${arrow}</div>` +
-              (fog ? `<button onclick="doRead('${s.name}','${name}')">read</button>` : "") +
+              (fog ? `<button onclick="doRead('${s.name}','${name}')">observe</button>` : "") +
               `</div>`;
     });
     html += "</div>";
@@ -228,8 +228,14 @@ function doRead(stage, strand) {
   act(async () => {
     const r = await api("POST", `/v1/sessions/${sid}/choose`, {stage, strand});
     const ink = r.result.inked[strand];
-    addNtr("you", `You read ${stage}.${strand}: ` +
+    addNtr("you", `You observe ${stage}.${strand}: ` +
       (ink > 0 ? "it stands realized (+)." : ink < 0 ? "it reads lost (−)." : "the text still shimmers."));
+    // every observation writes prose — the player reads what has happened
+    try {
+      const voice = document.getElementById("voice").value;
+      const n = await api("POST", `/v1/sessions/${sid}/narrate`, {voice});
+      addNtr(n.narration.voice, n.narration.text);
+    } catch (e) { /* narration never blocks play */ }
   });
 }
 function doWait() { act(() => api("POST", `/v1/sessions/${sid}/wait`, {steps: 12})); }
