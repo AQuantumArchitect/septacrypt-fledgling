@@ -15,7 +15,9 @@ sys.path.insert(0, "src")
 from septacrypt_fledgling.server.app import make_server  # noqa: E402
 
 MAX_TURNS = 120
-SEED = 7
+# Seed chosen so the scripted policy reaches quest victory (~turn 16 with
+# ground-truth observers) — a happy-path fixture, not a claim about win rate.
+SEED = 3
 
 
 def call(base, method, path, body=None):
@@ -26,7 +28,12 @@ def call(base, method, path, body=None):
 
 
 def play(base: str) -> dict:
-    created = call(base, "POST", "/v1/sessions", {"mode": "ship", "seed": SEED})
+    created = call(
+        base,
+        "POST",
+        "/v1/sessions",
+        {"mode": "ship", "seed": SEED, "private_observers": False},
+    )
     sid = created["session_id"]
     turns = 0
     won = False
@@ -69,7 +76,9 @@ def main() -> None:
     for i, r in enumerate(runs):
         print(f"run {i}: turns={r['turns']} victory={r['victory']} hash={r['physics_hash'][:16]}…")
     assert runs[0]["physics_hash"] == runs[1]["physics_hash"], "seeded runs diverged over HTTP"
-    print("[PROOF OK] seed-deterministic HTTP game loop; render payloads schema-valid throughout")
+    assert runs[0]["victory"], "happy-path seed no longer reaches victory (physics changed?)"
+    print("[PROOF OK] seed-deterministic HTTP game loop to quest victory; "
+          "render payloads schema-valid throughout")
 
 
 if __name__ == "__main__":
