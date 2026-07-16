@@ -170,6 +170,20 @@ class Router:
 
         return ok_envelope(**self.store.with_session(session_id, run))
 
+    def narrate(self, session_id: str, body: Dict[str, Any]) -> Dict[str, Any]:
+        def run(g: Any) -> Dict[str, Any]:
+            s = self._story_session(g)
+            return {"narration": s.narrate(voice=body.get("voice", "rasi"))}
+
+        return ok_envelope(**self.store.with_session(session_id, run))
+
+    def narration(self, session_id: str, query: Dict[str, Any]) -> Dict[str, Any]:
+        def run(g: Any) -> Dict[str, Any]:
+            s = self._story_session(g)
+            return {"narration": s.narration(since=query.get("since"))}
+
+        return ok_envelope(**self.store.with_session(session_id, run))
+
     def revive(self, session_id: str, body: Dict[str, Any]) -> Dict[str, Any]:
         def run(g: Any) -> Dict[str, Any]:
             s = self._story_session(g)

@@ -21,6 +21,8 @@ story session with POST /v1/sessions {"story": "starpod", "seed": N}):
   POST   /v1/sessions/{id}/choose          {stage, strand, strength?, observer_id?}
   GET    /v1/sessions/{id}/branches        revival lineage
   POST   /v1/sessions/{id}/revive          fork from the last coherent stamp
+  POST   /v1/sessions/{id}/narrate         {voice?} — render latest state as prose
+  GET    /v1/sessions/{id}/narration       (?since=stamp_id) — narration journal
 """
 from __future__ import annotations
 
@@ -37,8 +39,8 @@ from .sessions import SessionStore
 
 _SESSION_PATH = re.compile(r"^/v1/sessions/([0-9a-f]+)(?:/([a-z_]+))?$")
 
-_POST_VERBS = {"wait", "look", "stir", "report", "weave", "choose", "revive"}
-_GET_VERBS = {"status", "quests", "history", "story", "branches"}
+_POST_VERBS = {"wait", "look", "stir", "report", "weave", "choose", "revive", "narrate"}
+_GET_VERBS = {"status", "quests", "history", "story", "branches", "narration"}
 
 
 class _Handler(BaseHTTPRequestHandler):

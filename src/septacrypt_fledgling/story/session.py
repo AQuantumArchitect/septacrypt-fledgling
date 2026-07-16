@@ -232,6 +232,27 @@ class StorySession:
     def ledger(self):
         return self.game.ledger
 
+    # -- narration (pull-based; strictly outside the physics) --------------------
+    @property
+    def narrator(self):
+        if getattr(self, "_narrator", None) is None:
+            from ..narrator import Narrator
+
+            self._narrator = Narrator()
+        return self._narrator
+
+    def narrate(self, voice: str = "rasi") -> Dict[str, Any]:
+        e = self.narrator.narrate(self, voice=voice)
+        return {"stamp_id": e.stamp_id, "physics_hash": e.physics_hash,
+                "voice": e.voice, "text": e.text, "source": e.source}
+
+    def narration(self, since: Optional[str] = None) -> List[Dict[str, Any]]:
+        return [
+            {"stamp_id": e.stamp_id, "physics_hash": e.physics_hash,
+             "voice": e.voice, "text": e.text, "source": e.source}
+            for e in self.narrator.journal.since(since)
+        ]
+
     # -- story read model ---------------------------------------------------------
     def story_state(self) -> Dict[str, Any]:
         nxt = self.verifier.next_waypoint()
