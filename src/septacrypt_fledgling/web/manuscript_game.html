@@ -1,0 +1,228 @@
+<!-- STAR POD game layer — injected into the archived manuscript reader.
+     The living document IS the game: chapter headings grow strand controls,
+     and everything the reader collapses is written back into the book as
+     layer-tagged prose, governed by the manuscript's own voice toggles. -->
+<style>
+  .game-panel { max-width: var(--measure); margin: 0.6rem auto 1rem;
+    background: var(--bg-panel); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 0.7rem 0.9rem;
+    font-family: var(--font-ui); font-size: 0.85rem; }
+  .game-panel.written { opacity: 0.75; }
+  .game-panel.next-beat { border-color: var(--accent); box-shadow: 0 0 14px #c9a22733; }
+  .gp-head { display: flex; justify-content: space-between; align-items: baseline;
+    color: var(--text-muted); letter-spacing: 0.08em; font-size: 0.72rem;
+    text-transform: uppercase; margin-bottom: 0.5rem; }
+  .gp-head .beatnote { color: var(--accent); text-transform: none; letter-spacing: 0; }
+  .gp-strands { display: flex; gap: 0.6rem; }
+  .gp-strand { flex: 1; text-align: center; background: var(--bg-elev);
+    border: 1px solid var(--border); border-radius: 8px; padding: 0.45rem 0.2rem; }
+  .gp-strand .nm { color: var(--text-muted); font-size: 0.72rem;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .gp-strand .glyph { font-size: 1.5rem; line-height: 1.2; font-family: var(--font-mono); }
+  .glyph.g-plus { color: var(--translator); } .glyph.g-minus { color: #e07a7a; }
+  .glyph.g-unread { color: var(--text-muted); }
+  .gp-strand .lean { font-size: 0.7rem; color: var(--text-muted); min-height: 1em; }
+  .gp-strand button { margin-top: 0.35rem; width: 100%; cursor: pointer;
+    background: #223047; color: var(--guard); border: 1px solid #35507a;
+    border-radius: 6px; padding: 0.2rem 0; font-family: var(--font-ui); font-size: 0.75rem; }
+  .gp-strand button:hover { background: #2b3d5c; }
+  .gp-forbidden { margin-top: 0.5rem; font-size: 0.72rem; color: #c98484; }
+  .gp-loop { margin-top: 0.3rem; font-size: 0.75rem; color: var(--accent); font-style: italic; }
+  .game-prose p { position: relative; }
+  .game-prose p::before { content: "☄"; position: absolute; left: -1.4rem;
+    color: var(--accent); opacity: 0.5; font-size: 0.8rem; }
+
+  #game-bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 60;
+    background: color-mix(in srgb, var(--bg-panel) 92%, black); backdrop-filter: blur(6px);
+    border-top: 1px solid var(--border); font-family: var(--font-ui); font-size: 0.85rem;
+    padding: 0.55rem 1rem; display: flex; gap: 0.9rem; align-items: center; flex-wrap: wrap; }
+  #game-bar .k { color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase;
+    letter-spacing: 0.08em; margin-right: 0.25rem; }
+  #game-bar button, #game-bar select, #game-bar input {
+    background: var(--bg-elev); color: var(--text); border: 1px solid var(--border);
+    border-radius: 7px; padding: 0.35rem 0.8rem; font-family: var(--font-ui);
+    font-size: 0.85rem; cursor: pointer; }
+  #game-bar button:hover { border-color: var(--accent); }
+  #game-bar button.primary { border-color: var(--accent); color: var(--accent); }
+  #game-bar button.revive { border-color: #e07a7a; color: #e07a7a; display: none; }
+  #gb-next { color: var(--accent); cursor: pointer; }
+  #gb-banner { flex-basis: 100%; display: none; padding: 0.3rem 0; }
+  #gb-banner.corrupted { display: block; color: #e07a7a; }
+  #gb-banner.complete { display: block; color: var(--accent); }
+  body { padding-bottom: 7rem; }
+  .game-busy { opacity: 0.55; pointer-events: none; }
+</style>
+
+<div id="game-bar">
+  <span id="gb-start">
+    <span class="k">Star Pod, playable</span>
+    seed <input id="gb-seed" type="number" value="7" style="width:4.5rem">
+    <button class="primary" onclick="SP.newGame()">Begin the transmission</button>
+  </span>
+  <span id="gb-live" style="display:none">
+    <span><span class="k">run</span><span id="gb-run">—</span></span>
+    <span style="margin-left:.9rem"><span class="k">beats</span><span id="gb-beats">—</span></span>
+    <span style="margin-left:.9rem"><span class="k">attention</span><span id="gb-att">—</span></span>
+    <span style="margin-left:.9rem"><span class="k">next</span><span id="gb-next">—</span></span>
+    <button onclick="SP.wait()" title="Let the story drift — the leans turn">⏳ wait</button>
+    <select id="gb-voice" title="the voice that writes what you read">
+      <option value="rasi">Rasi writes</option><option value="guard">the Guard writes</option>
+      <option value="seer">the Seer writes</option><option value="translator">the Translator writes</option>
+      <option value="paul">Paul writes</option>
+    </select>
+    <button class="revive" id="gb-revive" onclick="SP.revive()">☩ restore</button>
+    <button onclick="SP.restart()" title="abandon this telling">↻</button>
+  </span>
+  <span id="gb-banner"></span>
+</div>
+
+<script>
+window.SP = (function () {
+  const STAGES = ["Egg","Gestation","Birth","Orbit","Aegis","Shepherd","Cleave"];
+  const BITS = [4,2,1];
+  const VOICE_LAYER = {rasi:"myth", guard:"guard", seer:"seer", translator:"translator", paul:"foreword"};
+  let sid = localStorage.getItem("starpod_sid_ms");
+  const panels = {}, prose = {};
+
+  // -- weave panels into the manuscript ------------------------------------
+  document.querySelectorAll("#manuscript h2").forEach(h2 => {
+    const name = STAGES.find(s => h2.textContent.trim().startsWith(s));
+    if (!name) return;
+    const panel = document.createElement("div");
+    panel.className = "game-panel"; panel.id = "gp-" + name;
+    const pr = document.createElement("div");
+    pr.className = "game-prose";
+    h2.after(pr); h2.after(panel);
+    panels[name] = panel; prose[name] = pr;
+  });
+
+  async function api(method, path, body) {
+    const r = await fetch(path, {method, headers: {"Content-Type": "application/json"},
+      body: body === undefined ? undefined : JSON.stringify(body)});
+    const j = await r.json();
+    if (!j.ok) { const e = new Error(j.error.message); e.kind = j.error.kind; throw e; }
+    return j;
+  }
+  const busy = on => document.body.classList.toggle("game-busy", on);
+  async function act(fn) {
+    busy(true);
+    try { await fn(); await refresh(); }
+    catch (e) {
+      if (e.kind === "TransmissionCorrupted") await refresh();
+      else if (e.kind === "UnknownSession") showStart();
+      else alert(e.message);
+    } finally { busy(false); }
+  }
+  const wants = (s, m) => s.strands.map((n,i) => n + ((m & BITS[i]) ? "+" : "−")).join(" ");
+
+  function writeIntoBook(stage, voice, text) {
+    const layer = VOICE_LAYER[voice] || "myth";
+    const p = document.createElement("p");
+    const span = document.createElement("span");
+    span.className = "layer layer-" + layer;
+    span.setAttribute("data-layer", layer);
+    span.textContent = text;
+    p.appendChild(span);
+    (prose[stage] || prose["Cleave"]).appendChild(p);
+  }
+
+  async function refresh() {
+    const [storyR, statusR] = await Promise.all([
+      api("GET", `/v1/sessions/${sid}/story`), api("GET", `/v1/sessions/${sid}/status`)]);
+    const st = storyR.story, nxt = st.beats.next_waypoint;
+    document.getElementById("gb-run").textContent = " " + st.run_state;
+    document.getElementById("gb-beats").textContent = ` ${st.beats.cursor}/${st.beats.total_waypoints}`;
+    document.getElementById("gb-att").textContent = " " + Math.round(statusR.state.meta.attention);
+    const nextEl = document.getElementById("gb-next");
+    const banner = document.getElementById("gb-banner");
+    banner.className = ""; banner.textContent = "";
+    document.getElementById("gb-revive").style.display = "none";
+    if (st.run_state === "corrupted") {
+      banner.className = "corrupted";
+      banner.textContent = "TRANSMISSION CORRUPTED — " + st.corruption.reason +
+        " Your humanity is your checksum: restore, and choose differently.";
+      document.getElementById("gb-revive").style.display = "inline-block";
+    } else if (st.victory) {
+      banner.className = "complete";
+      banner.textContent = "THE TRANSMISSION IS COMPLETE — Rejoyce those within the shell.";
+    }
+    if (nxt) {
+      const stg = st.stages.find(s => s.name === nxt.stage);
+      nextEl.textContent = ` ${nxt.stage}: ${wants(stg, nxt.mask)}`;
+      nextEl.onclick = () => panels[nxt.stage].scrollIntoView({behavior: "smooth", block: "center"});
+    } else nextEl.textContent = " —";
+
+    st.stages.forEach(s => {
+      const panel = panels[s.name]; if (!panel) return;
+      const fog = s.fog >= 0.3;
+      const isNext = nxt && nxt.stage === s.name;
+      panel.className = "game-panel" + (fog ? "" : " written") + (isNext ? " next-beat" : "");
+      let html = `<div class="gp-head"><span>${fog ? "unwritten — read it into being" : "written"}</span>` +
+        (isNext ? `<span class="beatnote">next beat: ${wants(s, nxt.mask)}</span>` : "") + `</div><div class="gp-strands">`;
+      s.strands.forEach(name => {
+        const ink = s.inked[name], lean = s.lean[name];
+        const glyph = ink > 0 ? "+" : ink < 0 ? "−" : "?";
+        const cls = ink > 0 ? "g-plus" : ink < 0 ? "g-minus" : "g-unread";
+        const leanTxt = !fog ? "" : lean > 0.15 ? "leans +" : lean < -0.15 ? "leans −" : "toss-up";
+        html += `<div class="gp-strand"><div class="nm" title="${name}">${name}</div>` +
+          `<div class="glyph ${cls}">${glyph}</div><div class="lean">${leanTxt}</div>` +
+          (fog ? `<button onclick="SP.read('${s.name}','${name}')">read</button>` : "") + `</div>`;
+      });
+      html += `</div>`;
+      if (fog && s.forbidden_masks.length)
+        html += `<div class="gp-forbidden">forbidden tellings: ` +
+          s.forbidden_masks.map(m => wants(s, m)).join("  ·  ") + `</div>`;
+      if (isNext && s.kairos.looping)
+        html += `<div class="gp-loop">going in circles — the moment has come back around; read now</div>`;
+      panel.innerHTML = html;
+    });
+  }
+
+  async function narrateInto(stage) {
+    const voice = document.getElementById("gb-voice").value;
+    try {
+      const r = await api("POST", `/v1/sessions/${sid}/narrate`, {voice});
+      writeIntoBook(stage, r.narration.voice, r.narration.text);
+    } catch (e) { /* narration must never block play */ }
+  }
+
+  function showStart() {
+    document.getElementById("gb-start").style.display = "inline";
+    document.getElementById("gb-live").style.display = "none";
+    localStorage.removeItem("starpod_sid_ms"); sid = null;
+  }
+  function showLive() {
+    document.getElementById("gb-start").style.display = "none";
+    document.getElementById("gb-live").style.display = "inline";
+  }
+
+  return {
+    read: (stage, strand) => act(async () => {
+      await api("POST", `/v1/sessions/${sid}/choose`, {stage, strand});
+      await narrateInto(stage);
+    }),
+    wait: () => act(() => api("POST", `/v1/sessions/${sid}/wait`, {steps: 12})),
+    revive: () => act(async () => {
+      const r = await api("POST", `/v1/sessions/${sid}/revive`, {});
+      writeIntoBook("Cleave", "guard",
+        `[Fear not. A corrupted telling was excised (${r.result.branch_id}). ` +
+        `Checksum ${r.result.fork_proof.replayed.slice(0, 12)} verified. Read on.]`);
+    }),
+    newGame: async () => {
+      const seed = parseInt(document.getElementById("gb-seed").value || "7", 10);
+      try {
+        const r = await api("POST", "/v1/sessions", {story: "starpod", seed});
+        sid = r.session_id; localStorage.setItem("starpod_sid_ms", sid);
+        Object.values(prose).forEach(p => p.innerHTML = "");
+        showLive(); await refresh();
+      } catch (e) { alert(e.message); }
+    },
+    restart: () => { if (sid) fetch(`/v1/sessions/${sid}`, {method: "DELETE"}); showStart(); },
+    boot: async () => {
+      if (!sid) return showStart();
+      try { showLive(); await refresh(); } catch { showStart(); }
+    },
+  };
+})();
+SP.boot();
+</script>

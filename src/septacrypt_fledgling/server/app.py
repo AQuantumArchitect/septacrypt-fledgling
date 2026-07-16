@@ -34,7 +34,20 @@ from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
 from urllib.parse import parse_qsl, urlparse
 
-_PLAY_PAGE = Path(__file__).resolve().parents[1] / "web" / "play.html"
+_WEB_DIR = Path(__file__).resolve().parents[1] / "web"
+_SIMPLE_PAGE = _WEB_DIR / "play.html"
+_GAME_LAYER = _WEB_DIR / "manuscript_game.html"
+_MANUSCRIPT = (
+    Path(__file__).resolve().parents[3]
+    / "docs" / "source_artifacts" / "RasiR4S1" / "index.html"
+)
+
+
+def _play_page() -> bytes:
+    """The archived manuscript reader with the game layer woven in — the
+    living document IS the game surface."""
+    html = _MANUSCRIPT.read_text(encoding="utf-8")
+    return html.replace("</body>", _GAME_LAYER.read_text(encoding="utf-8") + "\n</body>").encode("utf-8")
 
 from ..schema.envelope import error_envelope
 from .errors import ApiError, map_exception
@@ -123,8 +136,8 @@ class _Handler(BaseHTTPRequestHandler):
 
     def do_GET(self) -> None:  # noqa: N802
         path = urlparse(self.path).path.rstrip("/") or "/"
-        if path in ("/", "/play"):
-            data = _PLAY_PAGE.read_bytes()
+        if path in ("/", "/play", "/simple"):
+            data = _SIMPLE_PAGE.read_bytes() if path == "/simple" else _play_page()
             self.send_response(200)
             self.send_header("Content-Type", "text/html; charset=utf-8")
             self.send_header("Content-Length", str(len(data)))
