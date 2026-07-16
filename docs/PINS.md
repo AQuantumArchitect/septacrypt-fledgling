@@ -6,8 +6,8 @@ same change as any re-pin.
 
 | Dependency | Commit | Verified by |
 |---|---|---|
-| umwelt | `efb0de9` (main, post PR #7 + #8 merge) | `python -m pytest -q` → 231 passed, 2 skipped |
-| septacrypt-core | `e7b7262` (master) | 14 tests + `proofs/run_all.py` green |
+| umwelt | `5e6d10c` (main, post PR #9 merge — sprint feedback docs+test) | CI green (3.10, 3.12); host suite green against it |
+| septacrypt-core | `55166eb` (master, post-sprint: fast path, STIR cap, WorldSpec, Knot* renames) | 28 tests + `proofs/run_all.py` green |
 
 ## Install (fresh machine)
 
