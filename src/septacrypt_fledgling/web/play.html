@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>STAR POD</title>
+<style>
+  :root {
+    --bg: #0d0f14; --panel: #161a22; --panel2: #1d232e; --ink: #e8e2d0;
+    --dim: #8a8fa3; --gold: #d4b458; --red: #d45858; --green: #7fc97f;
+    --blue: #6aa9d4; --border: #2a3140;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+         font: 15px/1.5 Georgia, 'Times New Roman', serif; }
+  header { text-align: center; padding: 18px 10px 6px; }
+  header h1 { margin: 0; font-size: 26px; letter-spacing: 8px; color: var(--gold); }
+  header .sub { color: var(--dim); font-style: italic; font-size: 13px; }
+  main { max-width: 980px; margin: 0 auto; padding: 10px 14px 60px; }
+
+  #banner { border-radius: 8px; padding: 10px 14px; margin: 10px 0; display: none; }
+  #banner.corrupted { display: block; background: #2a1416; border: 1px solid var(--red); color: #f0b8b8; }
+  #banner.complete  { display: block; background: #241f10; border: 1px solid var(--gold); color: var(--gold); }
+
+  #statusbar { display: flex; gap: 16px; flex-wrap: wrap; align-items: center;
+               background: var(--panel); border: 1px solid var(--border);
+               border-radius: 8px; padding: 8px 14px; font-size: 14px; }
+  #statusbar .k { color: var(--dim); }
+  #nextbeat { background: var(--panel); border-left: 3px solid var(--blue);
+              border-radius: 6px; padding: 8px 14px; margin: 10px 0; }
+  #nextbeat b { color: var(--blue); }
+
+  .chapters { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+              gap: 10px; margin-top: 8px; }
+  .chapter { background: var(--panel); border: 1px solid var(--border);
+             border-radius: 10px; padding: 10px 12px; }
+  .chapter.next { border-color: var(--blue); box-shadow: 0 0 12px #6aa9d422; }
+  .chapter h3 { margin: 0 0 2px; font-size: 16px; }
+  .chapter .kind { font-size: 11px; letter-spacing: 2px; color: var(--dim); }
+  .chapter .kind.fog { color: var(--gold); }
+  .strands { display: flex; gap: 8px; margin: 10px 0 4px; }
+  .strand { flex: 1; background: var(--panel2); border: 1px solid var(--border);
+            border-radius: 8px; padding: 7px 4px; text-align: center; }
+  .strand .name { font-size: 11px; color: var(--dim); overflow: hidden;
+                  text-overflow: ellipsis; white-space: nowrap; }
+  .strand .glyph { font-size: 22px; line-height: 1.1; }
+  .strand .lean { font-size: 12px; color: var(--dim); min-height: 16px; }
+  .strand button { margin-top: 5px; width: 100%; background: #253048; color: var(--ink);
+                   border: 1px solid #37507a; border-radius: 6px; padding: 3px 0;
+                   font: inherit; font-size: 12px; cursor: pointer; }
+  .strand button:hover { background: #2f3d5c; }
+  .glyph.plus { color: var(--green); } .glyph.minus { color: var(--red); }
+  .glyph.unread { color: var(--dim); }
+  .forbidden { font-size: 12px; color: #b07070; margin-top: 4px; }
+  .loopnote { font-size: 12px; color: var(--gold); font-style: italic; }
+
+  #controls { display: flex; gap: 10px; flex-wrap: wrap; margin: 14px 0; align-items: center; }
+  #controls button, #newgame button {
+    background: var(--panel2); color: var(--ink); border: 1px solid var(--border);
+    border-radius: 8px; padding: 8px 16px; font: inherit; cursor: pointer; }
+  #controls button:hover { background: #262e3d; }
+  #controls button.primary { border-color: var(--gold); color: var(--gold); }
+  #controls button.revive { border-color: var(--red); color: #f0b8b8; display: none; }
+  select, input[type=number] { background: var(--panel2); color: var(--ink);
+    border: 1px solid var(--border); border-radius: 6px; padding: 7px; font: inherit; }
+
+  #narration { background: var(--panel); border: 1px solid var(--border);
+               border-radius: 10px; padding: 12px 16px; margin-top: 6px; }
+  #narration h3 { margin: 0 0 6px; font-size: 13px; letter-spacing: 3px; color: var(--dim); }
+  .ntr { margin: 8px 0; padding-left: 10px; border-left: 2px solid var(--border); }
+  .ntr .voice { font-size: 11px; letter-spacing: 2px; color: var(--gold); }
+  .ntr .text { font-style: italic; }
+
+  #newgame { text-align: center; padding: 40px 0; }
+  #toast { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
+           background: #2a1416; border: 1px solid var(--red); color: #f0b8b8;
+           border-radius: 8px; padding: 8px 18px; display: none; max-width: 90%; }
+  .busy { opacity: 0.55; pointer-events: none; }
+</style>
+</head>
+<body>
+<header>
+  <h1>STAR POD</h1>
+  <div class="sub">a recovered transmission, partly written — you write it by reading it</div>
+</header>
+<main>
+  <div id="newgame">
+    <p>The first four chapters are already written.<br>
+       The last three are yours — read them into being without ever writing
+       a telling the Guard has forbidden.</p>
+    seed <input id="seed" type="number" value="7" style="width:80px">
+    <button class="primary" onclick="newGame()">Begin the transmission</button>
+  </div>
+
+  <div id="game" style="display:none">
+    <div id="banner"></div>
+    <div id="statusbar"></div>
+    <div id="nextbeat"></div>
+    <div class="chapters" id="chapters"></div>
+    <div id="controls">
+      <button onclick="doWait()" title="Let the story drift — the arrows turn">⏳ Wait (drift 12)</button>
+      <select id="voice">
+        <option value="rasi">Rasi (the witness)</option>
+        <option value="guard">The Guard</option>
+        <option value="seer">The Seer</option>
+        <option value="translator">The Translator</option>
+        <option value="paul">Paul</option>
+      </select>
+      <button onclick="doTell()">📖 Hear the story</button>
+      <button class="revive" id="reviveBtn" onclick="doRevive()">☩ Restore the last coherent telling</button>
+      <span style="flex:1"></span>
+      <button onclick="restart()" title="Abandon and start over">↻ New game</button>
+    </div>
+    <div id="narration"><h3>THE TELLING</h3><div id="ntrlog"></div></div>
+  </div>
+</main>
+<div id="toast"></div>
+
+<script>
+const BITS = [4, 2, 1];
+let sid = localStorage.getItem("starpod_sid");
+
+async function api(method, path, body) {
+  const r = await fetch(path, {
+    method, headers: {"Content-Type": "application/json"},
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
+  const j = await r.json();
+  if (!j.ok) throw new Error(j.error.kind + ": " + j.error.message);
+  return j;
+}
+
+function toast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.style.display = "block";
+  setTimeout(() => t.style.display = "none", 5000);
+}
+
+function busy(on) { document.getElementById("game").classList.toggle("busy", on); }
+
+async function act(fn) {
+  busy(true);
+  try { await fn(); await refresh(); }
+  catch (e) {
+    if (String(e).includes("TransmissionCorrupted")) { await refresh(); }
+    else if (String(e).includes("UnknownSession") || String(e).includes("NotFound")) { showNew(); }
+    else toast(String(e.message || e));
+  }
+  finally { busy(false); }
+}
+
+function wants(stage, mask) {
+  return stage.strands.map((n, i) => n + ((mask & BITS[i]) ? "+" : "−")).join("  ");
+}
+
+async function refresh() {
+  const [storyR, statusR] = await Promise.all([
+    api("GET", `/v1/sessions/${sid}/story`),
+    api("GET", `/v1/sessions/${sid}/status`),
+  ]);
+  const st = storyR.story;
+  const attention = statusR.state.meta.attention;
+  const nxt = st.beats.next_waypoint;
+  const byName = {}; st.stages.forEach(s => byName[s.name] = s);
+
+  // banner
+  const banner = document.getElementById("banner");
+  banner.className = ""; banner.textContent = "";
+  document.getElementById("reviveBtn").style.display = "none";
+  if (st.run_state === "corrupted") {
+    banner.className = "corrupted";
+    banner.innerHTML = "<b>TRANSMISSION CORRUPTED</b> — " + st.corruption.reason +
+      "<br>Your humanity is your checksum: restore the last coherent telling and choose differently.";
+    document.getElementById("reviveBtn").style.display = "inline-block";
+  } else if (st.victory) {
+    banner.className = "complete";
+    banner.innerHTML = "<b>THE TRANSMISSION IS COMPLETE</b> — Rejoyce those within the shell. " +
+      (st.revivals.length ? `(tellings that died along the way: ${st.revivals.join(", ")})` : "");
+  }
+
+  // status bar
+  document.getElementById("statusbar").innerHTML =
+    `<span><span class="k">run</span> ${st.run_state}</span>` +
+    `<span><span class="k">beats</span> ${st.beats.cursor} / ${st.beats.total_waypoints}</span>` +
+    `<span><span class="k">attention</span> ${Math.round(attention)}</span>` +
+    (st.revivals.length ? `<span><span class="k">revivals</span> ${st.revivals.length}</span>` : "");
+
+  // next beat
+  const nb = document.getElementById("nextbeat");
+  if (nxt) {
+    nb.style.display = "block";
+    nb.innerHTML = `<b>NEXT BEAT — ${nxt.beat_id}</b>: in <b>${nxt.stage}</b> the telling must read ` +
+      `<b>${wants(byName[nxt.stage], nxt.mask)}</b> <span style="color:var(--dim)">(every strand read at least once)</span>`;
+  } else nb.style.display = "none";
+
+  // chapters
+  const wrap = document.getElementById("chapters");
+  wrap.innerHTML = "";
+  st.stages.forEach(s => {
+    const fog = s.fog >= 0.3;
+    const div = document.createElement("div");
+    div.className = "chapter" + (nxt && nxt.stage === s.name ? " next" : "");
+    let html = `<h3>${s.name}</h3><span class="kind ${fog ? "fog" : ""}">` +
+               `${fog ? "UNWRITTEN" : "written"}</span><div class="strands">`;
+    s.strands.forEach((name, i) => {
+      const ink = s.inked[name];
+      const lean = s.lean[name];
+      const glyph = ink > 0 ? "+" : (ink < 0 ? "−" : "?");
+      const cls = ink > 0 ? "plus" : (ink < 0 ? "minus" : "unread");
+      const arrow = !fog ? "" : (lean > 0.15 ? "leans +" : (lean < -0.15 ? "leans −" : "toss-up"));
+      html += `<div class="strand"><div class="name" title="${name}">${name}</div>` +
+              `<div class="glyph ${cls}">${glyph}</div><div class="lean">${arrow}</div>` +
+              (fog ? `<button onclick="doRead('${s.name}','${name}')">read</button>` : "") +
+              `</div>`;
+    });
+    html += "</div>";
+    if (fog && s.forbidden_masks.length)
+      html += `<div class="forbidden">forbidden: ` +
+              s.forbidden_masks.map(m => wants(s, m)).join(" · ") + `</div>`;
+    if (nxt && nxt.stage === s.name && s.kairos.looping)
+      html += `<div class="loopnote">going in circles — the moment has come back around; read now</div>`;
+    div.innerHTML = html;
+    wrap.appendChild(div);
+  });
+}
+
+function doRead(stage, strand) {
+  act(async () => {
+    const r = await api("POST", `/v1/sessions/${sid}/choose`, {stage, strand});
+    const ink = r.result.inked[strand];
+    addNtr("you", `You read ${stage}.${strand}: ` +
+      (ink > 0 ? "it stands realized (+)." : ink < 0 ? "it reads lost (−)." : "the text still shimmers."));
+  });
+}
+function doWait() { act(() => api("POST", `/v1/sessions/${sid}/wait`, {steps: 12})); }
+function doRevive() {
+  act(async () => {
+    const r = await api("POST", `/v1/sessions/${sid}/revive`, {});
+    addNtr("checksum", `Restored (${r.result.branch_id}) — the dead telling is left behind. Choose differently.`);
+  });
+}
+function doTell() {
+  const voice = document.getElementById("voice").value;
+  act(async () => {
+    const r = await api("POST", `/v1/sessions/${sid}/narrate`, {voice});
+    addNtr(r.narration.voice, r.narration.text);
+  });
+}
+function addNtr(voice, text) {
+  const log = document.getElementById("ntrlog");
+  const d = document.createElement("div");
+  d.className = "ntr";
+  d.innerHTML = `<div class="voice">${voice.toUpperCase()}</div><div class="text"></div>`;
+  d.querySelector(".text").textContent = text;
+  log.prepend(d);
+}
+
+function showNew() {
+  document.getElementById("newgame").style.display = "block";
+  document.getElementById("game").style.display = "none";
+}
+async function newGame() {
+  const seed = parseInt(document.getElementById("seed").value || "7", 10);
+  try {
+    const r = await api("POST", "/v1/sessions", {story: "starpod", seed});
+    sid = r.session_id;
+    localStorage.setItem("starpod_sid", sid);
+    document.getElementById("newgame").style.display = "none";
+    document.getElementById("game").style.display = "block";
+    document.getElementById("ntrlog").innerHTML = "";
+    addNtr("signal", "A transmission crackles in. The written chapters attest themselves; the fog awaits your reading.");
+    await refresh();
+  } catch (e) { toast(String(e.message || e)); }
+}
+function restart() {
+  if (sid) api("DELETE", `/v1/sessions/${sid}`).catch(() => {});
+  localStorage.removeItem("starpod_sid"); sid = null;
+  showNew();
+}
+
+(async function boot() {
+  if (!sid) return showNew();
+  try {
+    document.getElementById("newgame").style.display = "none";
+    document.getElementById("game").style.display = "block";
+    await refresh();
+  } catch { showNew(); }
+})();
+</script>
+</body>
+</html>

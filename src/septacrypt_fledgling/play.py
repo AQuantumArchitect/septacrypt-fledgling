@@ -202,6 +202,23 @@ def cmd_revive(args) -> None:
     _render_look(r["story"])
 
 
+def cmd_web(args) -> None:
+    """Start (or reuse) a server and open the game page in the browser."""
+    import webbrowser
+
+    base = None
+    if STATE_FILE.exists():
+        st = json.loads(STATE_FILE.read_text())
+        if _server_alive(st.get("base", "")):
+            base = st["base"]
+    if base is None:
+        base = _spawn_server()
+        STATE_FILE.write_text(json.dumps({"base": base, "session_id": ""}))
+    url = base + "/play"
+    print(f"STAR POD is at {url}")
+    webbrowser.open(url)
+
+
 def cmd_end(args) -> None:
     if STATE_FILE.exists():
         st = json.loads(STATE_FILE.read_text())
@@ -222,6 +239,7 @@ def main(argv=None) -> None:
     p = sub.add_parser("wait"); p.add_argument("steps", type=int, nargs="?", default=12); p.set_defaults(fn=cmd_wait)
     p = sub.add_parser("tell"); p.add_argument("voice", nargs="?", default="rasi"); p.set_defaults(fn=cmd_tell)
     p = sub.add_parser("revive"); p.set_defaults(fn=cmd_revive)
+    p = sub.add_parser("web"); p.set_defaults(fn=cmd_web)
     p = sub.add_parser("end"); p.set_defaults(fn=cmd_end)
     args = parser.parse_args(argv)
     args.fn(args)

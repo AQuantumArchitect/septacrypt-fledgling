@@ -30,8 +30,11 @@ from __future__ import annotations
 import json
 import re
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
 from urllib.parse import parse_qsl, urlparse
+
+_PLAY_PAGE = Path(__file__).resolve().parents[1] / "web" / "play.html"
 
 from ..schema.envelope import error_envelope
 from .errors import ApiError, map_exception
@@ -119,6 +122,15 @@ class _Handler(BaseHTTPRequestHandler):
         self._send(status, body)
 
     def do_GET(self) -> None:  # noqa: N802
+        path = urlparse(self.path).path.rstrip("/") or "/"
+        if path in ("/", "/play"):
+            data = _PLAY_PAGE.read_bytes()
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.send_header("Content-Length", str(len(data)))
+            self.end_headers()
+            self.wfile.write(data)
+            return
         self._handle("GET")
 
     def do_POST(self) -> None:  # noqa: N802
