@@ -119,6 +119,65 @@ class Router:
 
         return ok_envelope(**self.store.with_session(session_id, run))
 
+    # -- story verbs (additive; 404 on non-story sessions) -------------------
+    def _story_session(self, g: Any):
+        from ..story.session import StorySession
+
+        if not isinstance(g, StorySession):
+            raise ApiError(404, "NotAStorySession",
+                           "this session was not created with a story")
+        return g
+
+    def story(self, session_id: str, query: Dict[str, Any]) -> Dict[str, Any]:
+        def run(g: Any) -> Dict[str, Any]:
+            return {"story": self._story_session(g).story_state()}
+
+        return ok_envelope(**self.store.with_session(session_id, run))
+
+    def choose(self, session_id: str, body: Dict[str, Any]) -> Dict[str, Any]:
+        for key in ("stage", "strand"):
+            if key not in body:
+                raise ApiError(400, "BadRequest", f"choose requires {key}")
+
+        def run(g: Any) -> Dict[str, Any]:
+            s = self._story_session(g)
+            result = s.choose(
+                body["stage"],
+                body["strand"],
+                strength=float(body.get("strength", 1.0)),
+                observer_id=body.get("observer_id", "player"),
+            )
+            return {"result": result, "story": s.story_state()}
+
+        return ok_envelope(**self.store.with_session(session_id, run))
+
+    def branches(self, session_id: str, query: Dict[str, Any]) -> Dict[str, Any]:
+        def run(g: Any) -> Dict[str, Any]:
+            s = self._story_session(g)
+            return {
+                "branches": [
+                    {
+                        "branch_id": r.branch_id,
+                        "forked_at_index": r.forked_at_index,
+                        "forked_at_hash": r.forked_at_hash,
+                        "corrupted_head_hash": r.corrupted_head_hash,
+                        "corruption_reason": r.corruption_reason,
+                    }
+                    for r in s.revivals
+                ],
+                "run_state": s.run_state,
+            }
+
+        return ok_envelope(**self.store.with_session(session_id, run))
+
+    def revive(self, session_id: str, body: Dict[str, Any]) -> Dict[str, Any]:
+        def run(g: Any) -> Dict[str, Any]:
+            s = self._story_session(g)
+            result = s.revive()
+            return {"result": result, "story": s.story_state()}
+
+        return ok_envelope(**self.store.with_session(session_id, run))
+
     def schema(self) -> Dict[str, Any]:
         return ok_envelope(
             api=API_VERSION,

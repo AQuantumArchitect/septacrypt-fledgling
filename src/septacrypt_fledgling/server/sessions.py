@@ -26,6 +26,12 @@ _ALLOWED_CREATE_KEYS = {
     "spec",  # "module:ATTR" WorldSpec reference (data-driven worlds)
 }
 
+# Story sessions take a different, smaller create surface: the StorySpec
+# fixes world, ledger, observers and attention itself.
+_ALLOWED_STORY_KEYS = {"story", "seed"}
+
+_STORIES = {"starpod": "septacrypt_fledgling.story.starpod:STAR_POD"}
+
 
 class SessionStore:
     def __init__(self, max_sessions: int = 64):
@@ -35,10 +41,13 @@ class SessionStore:
         self.max_sessions = max_sessions
 
     def create(self, params: Dict[str, Any]) -> str:
-        unknown = set(params) - _ALLOWED_CREATE_KEYS
-        if unknown:
-            raise ApiError(400, "BadRequest", f"unknown session params: {sorted(unknown)}")
-        game = GameSession(**params)
+        if "story" in params:
+            game = self._create_story(params)
+        else:
+            unknown = set(params) - _ALLOWED_CREATE_KEYS
+            if unknown:
+                raise ApiError(400, "BadRequest", f"unknown session params: {sorted(unknown)}")
+            game = GameSession(**params)
         session_id = secrets.token_hex(8)
         with self._lock:
             if len(self._sessions) >= self.max_sessions:
@@ -46,6 +55,26 @@ class SessionStore:
             self._sessions[session_id] = game
             self._locks[session_id] = threading.Lock()
         return session_id
+
+    def _create_story(self, params: Dict[str, Any]):
+        from ..story.session import StorySession
+
+        unknown = set(params) - _ALLOWED_STORY_KEYS
+        if unknown:
+            raise ApiError(
+                400, "BadRequest", f"unknown story session params: {sorted(unknown)}"
+            )
+        ref = _STORIES.get(params["story"])
+        if ref is None:
+            raise ApiError(
+                400, "UnknownStory",
+                f"unknown story {params['story']!r}; available: {sorted(_STORIES)}",
+            )
+        module_name, attr = ref.split(":")
+        import importlib
+
+        story = getattr(importlib.import_module(module_name), attr)
+        return StorySession(story, seed=int(params.get("seed", 0)))
 
     def delete(self, session_id: str) -> None:
         with self._lock:

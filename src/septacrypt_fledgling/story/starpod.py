@@ -64,7 +64,10 @@ _STAGES: Tuple[Tuple[str, str, Tuple[Tuple[str, str, str], ...], int, Tuple[int,
         ("seed", "Seed merges with the proto-machine world", "Seed disperses into the dark"),
         ("ring", "Ring forms and works its way back", "no return is begun"),
         ("earth", "Earth endures within the shell", "the homeworld's fate stays dark"),
-    ), 0b110, (0b000, 0b010)),   # canon leaves Earth unresolved — the reunion is unwritten
+    ), 0b110, (0b000,)),   # canon leaves Earth unresolved — the reunion is unwritten.
+                           # (No 0b010 here: canon sits one bit from it, and a single
+                           # Born flip must never be instant loss — losing takes two
+                           # ignored warnings, not one unlucky read.)
 )
 
 BEATS: Tuple[BeatSpec, ...] = (

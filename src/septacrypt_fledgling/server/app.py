@@ -13,6 +13,14 @@ URL map (fledgeling.api.v1 — frozen at Arc 1 exit; additive changes only):
   GET    /v1/sessions/{id}/quests
   GET    /v1/sessions/{id}/history         (?branch=)
   GET    /v1/schema
+
+Story endpoints (additive post-freeze; 404 on non-story sessions; create a
+story session with POST /v1/sessions {"story": "starpod", "seed": N}):
+
+  GET    /v1/sessions/{id}/story           story graph, ink, beats, coherence
+  POST   /v1/sessions/{id}/choose          {stage, strand, strength?, observer_id?}
+  GET    /v1/sessions/{id}/branches        revival lineage
+  POST   /v1/sessions/{id}/revive          fork from the last coherent stamp
 """
 from __future__ import annotations
 
@@ -29,8 +37,8 @@ from .sessions import SessionStore
 
 _SESSION_PATH = re.compile(r"^/v1/sessions/([0-9a-f]+)(?:/([a-z_]+))?$")
 
-_POST_VERBS = {"wait", "look", "stir", "report", "weave"}
-_GET_VERBS = {"status", "quests", "history"}
+_POST_VERBS = {"wait", "look", "stir", "report", "weave", "choose", "revive"}
+_GET_VERBS = {"status", "quests", "history", "story", "branches"}
 
 
 class _Handler(BaseHTTPRequestHandler):

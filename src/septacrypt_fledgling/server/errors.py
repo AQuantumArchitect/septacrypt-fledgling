@@ -10,6 +10,8 @@ from typing import Tuple
 
 from septacrypt_core.world.transaction import TransactionError
 
+from ..story.session import TransmissionCorrupted
+
 
 class ApiError(Exception):
     """Host-level request error (bad route, unknown session, bad JSON)."""
@@ -25,6 +27,8 @@ def map_exception(exc: Exception) -> Tuple[int, str, str]:
         return exc.status, exc.kind, str(exc)
     if isinstance(exc, TransactionError):
         return 409, "TransactionError", f"{exc} (world unchanged — fail-closed rollback)"
+    if isinstance(exc, TransmissionCorrupted):
+        return 409, "TransmissionCorrupted", str(exc)
     if isinstance(exc, (ValueError, TypeError, KeyError)):
         return 400, type(exc).__name__, str(exc)
     return 500, type(exc).__name__, str(exc)
