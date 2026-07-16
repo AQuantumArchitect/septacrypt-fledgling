@@ -23,6 +23,7 @@ _ALLOWED_CREATE_KEYS = {
     "attention_budget",
     "apply_bridges",
     "include_ground_debug",
+    "spec",  # "module:ATTR" WorldSpec reference (data-driven worlds)
 }
 
 
