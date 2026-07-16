@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "septacrypt-fledgling"
+version = "0.1.0"
+description = "Fledgling host: JSON-over-HTTP game server over septacrypt-core + umwelt (FL-core Phase 6)"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+# Runtime is stdlib-only by design (http.server + json). The engine deps are
+# sibling repos installed editable — see docs/PINS.md for the exact commit pins:
+#   pip install -e ../umwelt -e ../septacrypt-core -e .
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=7"]
+
+[project.scripts]
+septacrypt-fledgling = "septacrypt_fledgling.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]

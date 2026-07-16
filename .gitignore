@@ -1,0 +1,9 @@
+# any ad-hoc venv name (.venv_check, .venv_foo, etc.), not just .venv/venv exactly
+.venv*/
+venv*/
+__pycache__/
+*.pyc
+*.egg-info/
+build/
+dist/
+.pytest_cache/
