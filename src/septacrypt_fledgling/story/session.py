@@ -15,8 +15,12 @@ from typing import Any, Dict, List, Optional, Tuple
 from septacrypt_core.api.session import GameSession
 
 from .compile import compile_story
-from .spec import StorySpec
+from .kairos import KairosTracker, chapter_phase
+from .spec import StorySpec, VoiceSpec
+from .spirit import SpiritFrames
 from .verifier import StoryVerifier, Verdict
+
+_MIND_STEP_CAP = 50  # lazy belief-relaxation catch-up cap per read
 
 PLAY_VERBS = ("wait", "look", "stir", "report", "choose")
 
@@ -47,6 +51,11 @@ class StorySession:
         self.run_state = "coherent"  # coherent | corrupted | complete
         self.corruption: Optional[Verdict] = None
         self._replaying = False
+        self.spirit = SpiritFrames(story)
+        self._voice_coverage: Dict[Tuple[str, str], List[VoiceSpec]] = {}
+        for v in story.voices:
+            for stage, strand in v.observes:
+                self._voice_coverage.setdefault((stage, strand), []).append(v)
         self._boot()
 
     # -- lifecycle ------------------------------------------------------------
@@ -62,6 +71,10 @@ class StorySession:
         boot = self.verifier.check(self.game)
         if boot.coherent:
             self.completed_beats.extend(boot.completed_beats)
+        self.kairos = KairosTracker()
+        self._minds = None  # built lazily; observations buffer until then
+        self._mind_events: List[Tuple[str, str, float, float]] = []
+        self._pending_mind_steps = 0
 
     def revive(self) -> Dict[str, Any]:
         """Fork from the last coherent stamp: rebuild + replay the journal
@@ -123,6 +136,11 @@ class StorySession:
             {"verb": verb, "kwargs": kwargs, "physics_hash": self.game.physics_hash()}
         )
         verdict = self.verifier.check(self.game, touched=touched)
+        self.kairos.observe(self)
+        if verb == "wait":
+            self._pending_mind_steps += int(kwargs.get("steps") or 1)
+        if touched is not None:
+            self._witness(touched)
         if verdict.coherent:
             self.last_coherent = len(self.journal)
             self.completed_beats.extend(verdict.completed_beats)
@@ -132,6 +150,56 @@ class StorySession:
             self.run_state = "corrupted"
             self.corruption = verdict
         return result
+
+    # -- voice minds (umwelt WorldSession; epistemic layer, outside physics) ----
+    @property
+    def minds(self):
+        if self._minds is None:
+            from ..minds.adapter import UmweltMindsAdapter
+
+            roles = tuple(
+                f"{s.name}_{st.name}" for s in self.story.stages for st in s.strands
+            )
+            self._minds = UmweltMindsAdapter(roles)
+            for v in self.story.voices:
+                if v.observes:
+                    self._minds.add_observer(v.name)
+        return self._minds
+
+    def _witness(self, touched: Tuple[str, str]) -> None:
+        """A committed reading lands in the private minds of every voice
+        whose coverage includes the read strand — at that voice's efficiency.
+        Voices witness the outcome, never the ground state itself."""
+        voices = self._voice_coverage.get(touched)
+        if not voices:
+            return
+        stage, strand = touched
+        z = float(self.game.world.zones[stage].role_bloch(strand)[2])
+        outcome = 1.0 if z >= 0 else -1.0
+        for v in voices:
+            self.minds.saw(v.name, f"{stage}_{strand}", outcome, confidence=v.efficiency)
+
+    def voices_state(self) -> Dict[str, Any]:
+        steps = min(self._pending_mind_steps, _MIND_STEP_CAP)
+        if steps and self._minds is not None:
+            self._minds.step(steps)
+        self._pending_mind_steps = 0
+        out: Dict[str, Any] = {}
+        for v in self.story.voices:
+            if not v.observes:
+                continue
+            beliefs = self.minds.beliefs_snapshot(v.name)
+            covered = {f"{stage}_{strand}" for stage, strand in v.observes}
+            out[v.name] = {
+                "register": v.register,
+                "spirit_frame": list(v.spirit_frame),
+                "beliefs": {
+                    role: {"z": round(z, 4), "confidence": round(c, 4)}
+                    for role, (z, c) in beliefs.items()
+                    if role in covered
+                },
+            }
+        return out
 
     def _quests_met(self) -> bool:
         return all(
@@ -258,6 +326,7 @@ class StorySession:
         nxt = self.verifier.next_waypoint()
         stages = []
         for s in sorted(self.story.stages, key=lambda s: s.order):
+            legal = self.verifier.legal_next_masks(s.name)
             stages.append({
                 "name": s.name,
                 "era": s.era,
@@ -267,7 +336,12 @@ class StorySession:
                 "effective_mask": self.verifier.effective_mask(s.name),
                 "canonical_mask": s.canonical_mask,
                 "forbidden_masks": list(s.forbidden_masks),
-                "legal_next_masks": self.verifier.legal_next_masks(s.name),
+                "legal_next_masks": legal,
+                "spirit_ranked": self.spirit.rank(s.name, legal),
+                "kairos": {
+                    **chapter_phase(self, s.name),
+                    "looping": self.kairos.looping(s.name),
+                },
             })
         return {
             "story_id": self.story.story_id,

@@ -75,3 +75,25 @@ non-finite physics, which is rejected rather than committed).
 4. Poll `GET .../quests` for `victory`.
 5. `state.narrative_log` is the story ticker; `GET .../history` is the witnessed
    knot for timeline UIs.
+
+## Story endpoints (additive, post-freeze)
+
+A **story session** plays a StorySpec — v1 ships `starpod` (Paul Spooner's
+*Star Pod*, public domain). Create with `POST /v1/sessions
+{"story": "starpod", "seed": 7}`; all frozen v1 verbs work unchanged, plus
+(404 `NotAStorySession` on plain sessions):
+
+| Endpoint | Method | Notes |
+|---|---|---|
+| `.../story` | GET | story graph: stages (fog, inked strands, effective/canonical/forbidden masks, legal next masks, per-voice `spirit_ranked`, `kairos` phase + `looping`), beat cursor, `run_state`, revivals |
+| `.../choose` | POST | `{stage, strand, strength?, observer_id?}` — a committed reading; the Born rule answers. Returns ink + verifier verdict |
+| `.../revive` | POST | after corruption: fork from the last coherent stamp with a physics-hash fork proof |
+| `.../branches` | GET | revival lineage (the tellings that died) |
+| `.../narrate` | POST | `{voice?}` (guard/translator/seer/rasi/paul) — render the latest state as prose. Cached by `(stamp_id, physics_hash)` |
+| `.../narration` | GET | `?since=stamp_id` — the narration journal |
+| `.../voices` | GET | the four voice minds' private beliefs (umwelt WorldSession) |
+
+New error kind: **409 `TransmissionCorrupted`** — the run is lost (a play
+verb was attempted on a corrupted story). This differs from
+`TransactionError`: the world is fine, the STORY is broken; `POST .../revive`
+is the way back. See `docs/STORY_PHYSICS.md` for the laws.

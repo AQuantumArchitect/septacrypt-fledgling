@@ -11,13 +11,13 @@ Typed contracts: `src/septacrypt_fledgling/contracts.py`, conformance gated by
 
 | # | Face | Component | Shipped as | Status |
 |---|------|-----------|-----------|--------|
-| 1 | Structure (primary) | Universal Architect | `septacrypt_core.architect.ArchitectCompiler` (+ archived `source_artifacts/Universal-Architect@57e3a9a`) | **Skeleton** — compiles CompositeNode trees to EntityRefs; resource-closure logic is a placeholder |
+| 1 | Structure (primary) | Universal Architect | `septacrypt_core.architect.ArchitectCompiler` (+ archived `source_artifacts/Universal-Architect@57e3a9a`) | **Running** — `septacrypt_fledgling.story.compile.StoryCompiler` conforms to StructureFace (book → WorldSpec; beat closure = resource closure reborn); core ArchitectCompiler remains a skeleton |
 | 2 | Dynamics (primary) | SpaceWheat manifold | `umwelt.substrate.CumulantCluster` as stand-in (real SpaceWheat is Godot-side, already umwelt-compatible via its Witness layer) | **Running (stand-in)** |
 | 3 | Belief (primary) | umwelt | `umwelt.host.GameHost` / `WorldSession`; septacrypt's `ObserverBeliefStore` as the lightweight in-kernel variant | **Running** — M2.4 parity holds between the two |
-| 4 | Kairos (tertiary) | Berry Tape | `septacrypt_core.geometry.berry.BerryJourney` over umwelt `BerryTape`; coordinates ride every `KnotStamp` | **Running** |
+| 4 | Kairos (tertiary) | Berry Tape | `septacrypt_core.geometry.berry.BerryJourney` over umwelt `BerryTape`; coordinates ride every `KnotStamp` | **Running, exalted** — story chapter-phase clock + loop detection (`story/kairos.py`), read-only by law |
 | 5 | History (tertiary) | Knot Ledger | `septacrypt_core.ledger` (KnotStamp/Cassette/TransitionCertificate/KnotLedger) + `world.CertifiedTransaction` | **Running, hardened** (fail-closed replay verification) |
 | 6 | Agency (tertiary) | Fledgeling | `GameSession` verbs served by **this repo's** HTTP host (`fledgeling.api.v1`) | **Running** — UI on top is the product work |
-| 7 | Meaning (bottom key) | Spirit Cube | `septacrypt_core.spirit.SpiritVector` (7 axes) + `SpiritScorer` | **Declared** — ranking exists; wired into candidate scoring in the Nested Reactor slice |
+| 7 | Meaning (bottom key) | Spirit Cube | `septacrypt_core.spirit.SpiritVector` (7 axes) + `SpiritScorer` | **Running** — per-voice frames rank legal story continuations (`story/spirit.py`); never legalizes (gated) |
 
 ## Edges (plan §2.2 contracts → implementation)
 
@@ -29,7 +29,7 @@ Typed contracts: `src/septacrypt_fledgling/contracts.py`, conformance gated by
 | Berry Tape → Knot Ledger | kaironic coordinates on durable stamps | **Running**: `berry_coordinate` on every stamp |
 | Knot Ledger → Fledgeling | expose history, branches, proofs | **Running**: `GET /v1/sessions/{id}/history` + `physics_hash` |
 | Fledgeling → Berry Tape | allocate attention, alter phase through lawful actions | **Running**: attention budget + STIR (typed field cassette) |
-| Spirit Cube ↔ all | attach semantic vectors, rank legal options | **Partial**: `SpiritVector.dot` ranking; invariant "spirit reorders, never legalizes" gated in the slice tests |
+| Spirit Cube ↔ all | attach semantic vectors, rank legal options | **Running**: per-voice frame ranking in every `/story` payload; "spirit reorders, never legalizes" gated in slice + story tests |
 
 ## Laws that hold across every edge (gated, not aspirational)
 
