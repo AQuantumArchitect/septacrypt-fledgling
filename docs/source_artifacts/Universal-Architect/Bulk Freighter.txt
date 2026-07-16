@@ -1,0 +1,54 @@
+#
+# generated in 76 iterations.
+*
+# Originally calculated from Specification.txt
+*Bulk Freighter
+thrust 3860
+# thrust generated 80000
+# thrust consumed -76140
+structural integrity 1660
+# structural integrity generated 80000
+# structural integrity consumed -78340
+firepower 135
+# firepower generated 144
+# firepower consumed -9
+life support 112.25
+# life support generated 260
+# life support consumed -147.75
+power 27.35
+# power generated 186
+# power consumed -158.65
+engineer 1.5
+# engineer generated 36
+# engineer consumed -34.5
+crew 1.13
+# crew generated 58
+# crew consumed -56.87
+hab volume 1
+# hab volume generated 1035
+# hab volume consumed -1034
+emergency power 0.965
+# emergency power generated 120
+# emergency power consumed -119.035
+officer 0.3
+# officer generated 4
+# officer consumed -3.7
+fuel 0.23
+# fuel generated 130.5
+# fuel consumed -130.27
+# All local nodes and resources are as follows:
+# Arboraetum 1
+# Backup Generators 8
+# Big Engines 10
+# Crew Quarters 29
+# Engineering Quarters 9
+# Fuel Tanks 29
+# Habitable Volume 1035
+# Main Guns 1
+# Officer's Quarters 2
+# Power Core 3
+# Structural Integrity Generator 40
+# Total Volume 76140
+# volume -50000
+# node results for Bulk Freighter complete
+# total minimized cost: 34.655 (from 5 terms)

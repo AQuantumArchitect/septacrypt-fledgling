@@ -1,0 +1,54 @@
+#
+# generated in 40 iterations.
+*
+# Originally calculated from Specification.txt
+*Fighter Ship
+thrust 1724
+# thrust generated 8000
+# thrust consumed -6276
+structural integrity 1324
+# structural integrity generated 8000
+# structural integrity consumed -6676
+life support 224.95
+# life support generated 260
+# life support consumed -35.05
+firepower 135
+# firepower generated 144
+# firepower consumed -9
+power 28.39
+# power generated 62
+# power consumed -33.61
+emergency power 10.719
+# emergency power generated 30
+# emergency power consumed -19.281
+crew 1.02
+# crew generated 12
+# crew consumed -10.98
+hab volume 1
+# hab volume generated 281
+# hab volume consumed -280
+fuel 0.94
+# fuel generated 27
+# fuel consumed -26.06
+officer 0.3
+# officer generated 2
+# officer consumed -1.7
+engineer 0.1
+# engineer generated 8
+# engineer consumed -7.9
+# All local nodes and resources are as follows:
+# Arboraetum 1
+# Backup Generators 2
+# Big Engines 1
+# Crew Quarters 6
+# Engineering Quarters 2
+# Fuel Tanks 6
+# Habitable Volume 281
+# Main Guns 1
+# Officer's Quarters 1
+# Power Core 1
+# Structural Integrity Generator 4
+# Total Volume 6276
+# firepower -7
+# node results for Fighter Ship complete
+# total minimized cost: 17.33 (from 5 terms)
