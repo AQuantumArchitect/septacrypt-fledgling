@@ -1,2 +1,3 @@
 Universal-Architect @ 57e3a9a (2026-05-31)
 Fledgeling_HTML @ 7dccf53 (2024-12-05)
+dudecon/RasiR4S1 @ 83cd114 (Session cleanup) — archived 2026-07-16, public domain

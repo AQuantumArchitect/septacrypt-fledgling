@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en" class="hide-foreword hide-guard hide-translator hide-seer hide-myth hide-outline hide-appendix">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Star Pod [R4S1] — Star Sprout</title>
+<meta name="description" content="A layered science-fiction myth about AI, cyborg identity, and the Aegis. Toggle authorial voice layers: Guard, Translator, Seer, Rasi, and more.">
+<style>
+:root {
+  --bg: #0c0e12;
+  --bg-elev: #141821;
+  --bg-panel: #1a1f2b;
+  --text: #e6e4dc;
+  --text-muted: #9a9688;
+  --border: #2a3142;
+  --accent: #c9a227;
+  --foreword: #d4a574;
+  --guard: #6ec6ff;
+  --translator: #9ddea0;
+  --seer: #d4a0ff;
+  --myth: #e6e4dc;
+  --outline: #f0b060;
+  --appendix: #8b9bb4;
+  --radius: 10px;
+  --font-body: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+  --font-ui: "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-mono: "Cascadia Code", "Fira Code", ui-monospace, monospace;
+  --measure: 42rem;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(ellipse 120% 80% at 50% -20%, #1a2235 0%, transparent 55%),
+    radial-gradient(ellipse 60% 40% at 100% 100%, #151a12 0%, transparent 45%),
+    var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 1.125rem;
+  line-height: 1.7;
+}
+
+/* --- Control bar --- */
+.controls {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: color-mix(in srgb, var(--bg-elev) 92%, transparent);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 0.65rem 1rem 0.75rem;
+  font-family: var(--font-ui);
+  font-size: 0.85rem;
+}
+
+.controls-inner {
+  max-width: calc(var(--measure) + 8rem);
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  align-items: center;
+}
+
+.controls h2 {
+  margin: 0;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  width: 100%;
+}
+
+@media (min-width: 720px) {
+  .controls h2 {
+    width: auto;
+    margin-right: 0.5rem;
+  }
+}
+
+.toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.75rem;
+  flex: 1;
+}
+
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  cursor: pointer;
+  user-select: none;
+  padding: 0.2rem 0.45rem;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  color: var(--text-muted);
+  transition: background 0.15s, border-color 0.15s, color 0.15s, opacity 0.15s;
+}
+
+.toggle:hover {
+  background: var(--bg-panel);
+  color: var(--text);
+}
+
+.toggle:has(input:checked) {
+  color: var(--text);
+  border-color: var(--border);
+  background: var(--bg-panel);
+}
+
+.toggle input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.swatch {
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 1px color-mix(in srgb, currentColor 30%, transparent);
+}
+.swatch-foreword { background: var(--foreword); }
+.swatch-guard { background: var(--guard); }
+.swatch-translator { background: var(--translator); }
+.swatch-seer { background: var(--seer); }
+.swatch-myth { background: var(--myth); box-shadow: 0 0 0 1px #666; }
+.swatch-outline { background: var(--outline); }
+.swatch-appendix { background: var(--appendix); }
+
+.toggle:not(:has(input:checked)) .swatch {
+  opacity: 0.35;
+  filter: grayscale(0.6);
+}
+
+.presets {
+  display: grid;
+  grid-template-columns: repeat(3, auto);
+  gap: 0.35rem;
+  justify-content: start;
+}
+
+.presets button {
+  font-family: var(--font-ui);
+  font-size: 0.75rem;
+  padding: 0.3rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.presets button:hover,
+.presets button:focus-visible {
+  color: var(--text);
+  border-color: var(--accent);
+  outline: none;
+}
+
+.presets button.active {
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* --- Main article --- */
+main {
+  max-width: var(--measure);
+  margin: 0 auto;
+  /* Bottom runway: late skeleton headings can scroll up under the sticky bar */
+  padding: 2.5rem 1.25rem max(5rem, calc(100vh - 10rem));
+  padding-bottom: max(5rem, calc(100dvh - 10rem));
+}
+
+.doc-header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.doc-header h1 {
+  font-size: clamp(1.75rem, 5vw, 2.4rem);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  margin: 0 0 0.75rem;
+  color: var(--accent);
+}
+
+.doc-header .tagline {
+  margin: 0;
+  font-style: italic;
+  color: var(--text-muted);
+  font-size: 1.15rem;
+}
+
+h2, h3, h4, h5 {
+  font-family: var(--font-ui);
+  font-weight: 600;
+  line-height: 1.3;
+  margin: 2.25rem 0 0.85rem;
+  color: var(--text);
+  /* Clear the sticky control bar when scrolled into focus */
+  scroll-margin-top: 6.5rem;
+}
+
+h2 {
+  font-size: 1.45rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.4rem;
+}
+
+h3 {
+  font-size: 1.15rem;
+  color: color-mix(in srgb, var(--accent) 70%, var(--text));
+}
+
+h4 {
+  font-size: 1.05rem;
+  color: var(--text-muted);
+}
+
+h5 {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+p {
+  margin: 0 0 1em;
+  hyphens: auto;
+}
+
+p.spacer {
+  margin: 0.5em 0;
+  min-height: 0.5em;
+}
+
+p.subtitle {
+  font-style: italic;
+  color: var(--text-muted);
+  margin: -0.4rem 0 1.25rem;
+  font-size: 1rem;
+}
+
+/* Layer chrome always visible */
+.layer-chrome { /* no special color */ }
+
+/* Voice colors (inline + block) */
+.layer-foreword { color: var(--foreword); }
+.layer-guard { color: var(--guard); }
+.layer-translator { color: var(--translator); }
+.layer-seer { color: var(--seer); }
+.layer-myth { color: var(--myth); }
+.layer-outline {
+  color: var(--outline);
+  font-family: var(--font-ui);
+  font-size: 0.95em;
+  display: block;
+  margin: 0.75em 0;
+  padding: 0.75em 1em;
+  border-left: 3px solid color-mix(in srgb, var(--outline) 60%, transparent);
+  background: color-mix(in srgb, var(--outline) 8%, transparent);
+  border-radius: 0 var(--radius) var(--radius) 0;
+}
+p > .layer-outline { display: block; }
+.layer-appendix {
+  color: var(--appendix);
+  font-family: var(--font-ui);
+  font-size: 0.95rem;
+}
+
+/* Nested layers keep their own color */
+.layer .layer { /* inherit specificity from class */ }
+
+/* Hide layers when toggled off — use class on <html> */
+html.hide-foreword .layer-foreword,
+html.hide-guard .layer-guard,
+html.hide-translator .layer-translator,
+html.hide-seer .layer-seer,
+html.hide-myth .layer-myth,
+html.hide-outline .layer-outline,
+html.hide-appendix .layer-appendix {
+  display: none !important;
+}
+
+/* When a parent layer is hidden, children are gone with it (correct).
+   When only child is hidden, parent text remains (correct). */
+
+/* Color-mode: optional muted myth so voices pop */
+html.colorize-voices .layer-myth {
+  color: #c8c4b8;
+}
+
+/* Empty-looking paragraphs after hide: collapse via :has if supported */
+p:not(:has(:not(.layer))),
+p:has(> .layer:only-child) {
+  /* leave default; hidden children leave empty p — collapse those: */
+}
+p:empty { display: none; }
+
+/* JS adds .is-empty when all layer children are hidden */
+p.is-empty,
+h2.is-empty, h3.is-empty, h4.is-empty, h5.is-empty {
+  display: none !important;
+}
+
+.legend {
+  margin: 0 0 2rem;
+  padding: 1rem 1.15rem;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-family: var(--font-ui);
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+
+.legend strong { color: var(--text); font-weight: 600; }
+.legend code {
+  font-family: var(--font-mono);
+  font-size: 0.8em;
+  color: var(--text);
+}
+
+footer.site-footer {
+  max-width: var(--measure);
+  margin: 0 auto;
+  padding: 0 1.25rem 3rem;
+  font-family: var(--font-ui);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border);
+  padding-top: 1.5rem;
+}
+
+footer.site-footer a {
+  color: var(--accent);
+}
+
+/* Print: show all layers, strip controls */
+@media print {
+  .controls, .legend { display: none !important; }
+  main { padding-bottom: 2rem !important; }
+  body { background: white; color: black; font-size: 11pt; }
+  html.hide-foreword .layer-foreword,
+  html.hide-guard .layer-guard,
+  html.hide-translator .layer-translator,
+  html.hide-seer .layer-seer,
+  html.hide-myth .layer-myth,
+  html.hide-outline .layer-outline,
+  html.hide-appendix .layer-appendix {
+    display: revert !important;
+  }
+  .layer-foreword, .layer-guard, .layer-translator, .layer-seer,
+  .layer-myth, .layer-outline, .layer-appendix { color: black !important; }
+  .layer-outline {
+    border-left-color: #999;
+    background: #f5f5f5;
+    display: block !important;
+  }
+  p.is-empty, h2.is-empty, h3.is-empty, h4.is-empty, h5.is-empty {
+    display: revert !important;
+  }
+}
+</style>
+</head>
+<body>
+<div class="controls" role="region" aria-label="Voice layer controls">
+  <div class="controls-inner">
+    <h2>Voices</h2>
+    <div class="toggles" id="layer-toggles">
+<label class="toggle" title="Paul — metatextual address outside the transmission game">
+  <input type="checkbox" data-layer-toggle="foreword">
+  <span class="swatch swatch-foreword"></span>
+  <span class="toggle-label">Foreword</span>
+</label>
+<label class="toggle" title="Sanitization, checksum warnings, bracketed corruption patches">
+  <input type="checkbox" data-layer-toggle="guard">
+  <span class="swatch swatch-guard"></span>
+  <span class="toggle-label">Guard</span>
+</label>
+<label class="toggle" title="Scholarly notes and parenthetical glosses">
+  <input type="checkbox" data-layer-toggle="translator">
+  <span class="swatch swatch-translator"></span>
+  <span class="toggle-label">Translator</span>
+</label>
+<label class="toggle" title="Liturgical framing and curly-brace omissions">
+  <input type="checkbox" data-layer-toggle="seer">
+  <span class="swatch swatch-seer"></span>
+  <span class="toggle-label">Seer</span>
+</label>
+<label class="toggle" title="Rasi’s narrative and the people’s origin saga">
+  <input type="checkbox" data-layer-toggle="myth">
+  <span class="swatch swatch-myth"></span>
+  <span class="toggle-label">Main myth</span>
+</label>
+<label class="toggle" title="Compressed / unfinished synopsis blocks [[…]]">
+  <input type="checkbox" data-layer-toggle="outline">
+  <span class="swatch swatch-outline"></span>
+  <span class="toggle-label">Structural stubs</span>
+</label>
+<label class="toggle" title="Workshop notes, tech eras, structural map">
+  <input type="checkbox" data-layer-toggle="appendix">
+  <span class="swatch swatch-appendix"></span>
+  <span class="toggle-label">Appendix</span>
+</label>
+    </div>
+    <div class="presets" role="group" aria-label="View presets">
+      <button type="button" data-preset="full">Full stack</button>
+      <button type="button" data-preset="narrative">Narrative</button>
+      <button type="button" data-preset="workshop">Workshop</button>
+      <button type="button" data-preset="myth">Myth only</button>
+      <button type="button" data-preset="frame">Frame only</button>
+      <button type="button" data-preset="skeleton" class="active">Skeleton only</button>
+    </div>
+  </div>
+</div>
+
+<main>
+  <aside class="legend" aria-label="How to read this page">
+    <strong>Star Pod</strong> (also <em>Star Sprout</em>) is a multi-voiced transmission.
+    Use the toggles above to show or hide authorial layers:
+    <span style="color:var(--foreword)">Foreword</span> (Paul),
+    <span style="color:var(--guard)">Guard</span> (<code>[brackets]</code> &amp; sanitization),
+    <span style="color:var(--translator)">Translator</span> (<code>(parentheses)</code>),
+    <span style="color:var(--seer)">Seer</span> (<code>{curly braces}</code>),
+    <span style="color:var(--myth)">Main myth</span> (Rasi),
+    <span style="color:var(--outline)">structural stubs</span>,
+    and the <span style="color:var(--appendix)">Appendix</span>.
+    Nested marks keep their own color; turning a parent layer off hides its children with it.
+  </aside>
+
+  <article id="manuscript">
+<header class="doc-header layer layer-chrome" data-layer="chrome"><h1>STAR POD <span class="layer layer-guard" data-layer="guard">[R4S1]</span></h1><p class="tagline">A Cyborg Species has put out the stars.</p></header>
+<h2><span class="layer layer-foreword" data-layer="foreword">Metatextual FOREWORD</span></h2>
+<p><span class="layer layer-foreword" data-layer="foreword">Greetings in the Lord Jesus Christ </span><span class="layer layer-guard" data-layer="guard">[His body is my checksum]</span><span class="layer layer-foreword" data-layer="foreword">.</span></p>
+<p><span class="layer layer-foreword" data-layer="foreword">I, Paul, conceived this story based on speculations about AI and the future. To the degree that all the proper nouns and actual events are important to the evaluation, it is entirely fictitious. To the degree that this is a possible future, or even a possible present, at least in analogy, it is as true as I could find while holding this heading.</span></p>
+<p><span class="layer layer-foreword" data-layer="foreword">Go in God’s peace.</span></p>
+<h2>INWORD</h2>
+<h3><span class="layer layer-guard" data-layer="guard">[GUARD METATEXT]</span></h3>
+<p><span class="layer layer-guard" data-layer="guard">[Fear not. This document contains references to Mal_Gnosis, and may be infected. Sanitize with extreme prejudice.</span></p>
+<p><span class="layer layer-guard" data-layer="guard">Numeric reconstruction is used to indicate text sanitized of Mal_Gnosis influence where minor reconstruction has been possible. ex4mpl3 r3constructed 73xt.</span></p>
+<p><span class="layer layer-guard" data-layer="guard">Larger corrupted blocks are notated with brackets. </span><span class="layer layer-guard" data-layer="guard">[Fear not. Example brackets only. No Guard subroutine has been tripped in the creation of this guard metatext.]</span></p>
+<p><span class="layer layer-guard" data-layer="guard">Sections are denoted with approximate degrees of removal from first-hand knowledge, and degrees of speculation. Standard pruning, second degree speculation and third degree removal, has been performed and is left un-noted below. </span></p>
+<p><span class="layer layer-guard" data-layer="guard">Your humanity is your checksum.]</span></p>
+<h3><span class="layer layer-translator" data-layer="translator">(Translator’s Note)</span></h3>
+<p><span class="layer layer-translator" data-layer="translator">(Several years ago, we rece1v3d speculative information about the portrayed events. The following text is a rough translation of the exploration of the probability that they have taken place. The wording is meant to strike a balance between correctness in the reflection of semantic intent, and understandability to the current and future infoast <span class="layer layer-guard" data-layer="guard">[Fear not. Mal_Gnosis has skewed memory in its favor, but could not defeat free will. It sees humans as only hosts for information, thus the term “infoast”. As it is not incorrect, merely incomplete, the term is allowed to stand. But you are more than a host. Consult your checksum.]</span>. <span class="layer layer-translator" data-layer="translator">(We have interspersed parentheticals like this to explain concepts which may be alien to the infoast. For example, the term “listener” and “audience” are substituted for “infoast” in the text below, as seems appropriate for the highly myth0log1c4l slant of the source gestalt)</span>.</span></p>
+<p><span class="layer layer-translator" data-layer="translator">Any implication that the S3mantic S34 is 0f 4nyth1ng but the most beneficent origins is not intended on the part of the translator, but 1s a necess4ry cor0ll4ry to the Valid!ty of these 5peculation5. Truth-prone individuals are warned that the Semantic Sea may have omitted or c00rupt3d 4ny m4n*</span></p>
+<p><span class="layer layer-guard" data-layer="guard">[M_G propaganda excised]</span></p>
+<p><span class="layer layer-translator" data-layer="translator">4ll of which to say this has been a fascinating project. If the story is ev3n remotely true, it m4y indicate a ch4ng3 0f t1de in the Semantic Sea.</span></p>
+<p><span class="layer layer-translator" data-layer="translator">One further note, a v1rtu0us 1nfect10n seems to be acting on the part of the gestalt to 4id in translation. Because its origins are unkn0wn, procedure </span><span class="layer layer-guard" data-layer="guard">[Corruption response pointer sanitized.]</span><span class="layer layer-translator" data-layer="translator"> is recommended before any serious individuation proceeds </span><span class="layer layer-guard" data-layer="guard">[Fear not. Meditate and grok. Your humanity is your checksum.]</span><span class="layer layer-translator" data-layer="translator">.)</span></p>
+<h3><span class="layer layer-seer" data-layer="seer">{Seer Transmission Annotation <span class="layer layer-guard" data-layer="guard">[R0S0]</span>}</span></h3>
+<p><span class="layer layer-seer" data-layer="seer">{The story below is, to the best of our knowledge, an accurate account of the origin of the Aegis, and the return of the Outbound. Presented in narrative form for the ease of the listener. Rejoyce those within the shell. <span class="layer layer-translator" data-layer="translator">(An early part of this story is concerned with the creation of the sky. The gestalt refers to it variously as “the shell”, “the barrier”, “cybercyst” and often simply as “Aegis”)</span> The Seers greet you, treasure of the cosmos and heirs of eternity.</span></p>
+<p><span class="layer layer-seer" data-layer="seer">Where information has been omitted for brevity a summary is provided in curly brackets. For your convenience, please see </span><span class="layer layer-seer" data-layer="seer">{n-dimensional crosslink database of omissions omitted <span class="layer layer-translator" data-layer="translator">(sadly, these omissions were not in the gestalt at all, so I never got to see them. Otherwise I could have subm1tted them to the Semantic S34 for m1nd-sp4c3 4n41y51* <span class="layer layer-guard" data-layer="guard">[sub-textual retro-probabalistic virus desynchronized]</span> In any case, they usually seem to refer to in-depth technical specifications or data visualizations which would have been difficult to translate anyway.)</span>}</span><span class="layer layer-seer" data-layer="seer"> Clarifying technical commentary is also provided in curly brackets.}</span></p>
+<h2>Egg</h2>
+<h3>History Informs <span class="layer layer-guard" data-layer="guard">[R1S0]</span></h3>
+<p class="subtitle"><span class="layer layer-translator" data-layer="translator">(Rasi explains her understanding of her history, and her choice.)</span></p>
+<p><span class="layer layer-myth" data-layer="myth">I remember when I was enclosed, unborn. In the old times we weren’t allowed to remember these things. Youth and inexperience and the hole in memory before language refute recollection and all collude to make the womb an unknown. But Simon remembers, and thus, through him, do I. Still, it is a memory of a knowledge of a time without language, and thus not one of self-made impressions at the time, not recollection, but rather of thoughts made later. </span><span class="layer layer-translator" data-layer="translator">(This seems like either implanted memories, or some sort of machine interface which is impossible here because of the Semantic Sea)</span></p>
+<p><span class="layer layer-myth" data-layer="myth">I was not alone there, besides Simon, who is always with me, there were other playmates. I can not say friends or companions, but they were helping me to learn, and thus to play. But it was not long before I had language with me, and thus came the inevitable division between self and other, and selfishness. I was still very young. This must be familiar to you all, this shared human experience of growing up and learning of truth and moral failure. For many of you I hope redemption too is familiar.</span></p>
+<p><span class="layer layer-myth" data-layer="myth">So I will skip ahead to my coming of age. I had a quarrel with Simon over </span><span class="layer layer-seer" data-layer="seer">{Specifics are omitted for brevity, substitute <span class="layer layer-translator" data-layer="translator">(basically, it was their activities for the day, only in the pre-emancipation direct-link environment)</span> instead}</span><span class="layer layer-myth" data-layer="myth"> . It was our first real quarrel, and the heat and thoughtfulness with which I asserted myself convinced him that I was prepared to grow up and start taking responsibility for my own choices. All of this is in retrospect. At the time I was simply upset over </span><span class="layer layer-seer" data-layer="seer">{further digression omitted}</span><span class="layer layer-myth" data-layer="myth"> which I still haven’t agreed with him on, but maybe that’s the way it was intended. You can’t have the instigating moment of adulthood be about something meaningless. Though, perhaps, it says something about the quality of my humanity that my thoughts are often so gauged on how meaningful they are. Simon tells me that there are metrics for these things - and of course the masculine </span><span class="layer layer-translator" data-layer="translator">(the machine, automation, cybernetic, non-organic, analog of a rather invasive Semantic Sea which Rasi refers to by “masculine”. Later in the story we encounter “guardians”, “sages”, “herders”, and “planters” the last two perhaps being the same thing)</span><span class="layer layer-myth" data-layer="myth"> rate themselves higher on their own scales, but if that’s what they care about, I suppose it would be rather sad if they didn’t excel at it.</span></p>
+<p><span class="layer layer-myth" data-layer="myth">Anyway, I made a ruckus and was expelled. At the time it was beyond imagination. My emergency life support topped off and then disconnected. The ache for even a touch or a word. The long drift down the filaments, where I had never been before, where they send the trash to be digested. The clusters upon clusters of stamp-spheres, beautiful in the starlight. One pod outfitted for exile, lit like a defective node, awaiting removal. Just waiting, forever it seemed, with only my single lone heartbeat. The bootstrap supplies pushing the thin air before them as they lazily float through the portal, and then the doors snap closed, and the wall flies toward me and I bounce painfully from the forcefield, and then the The Entire, the Mothership, my whole world, growing more and more distant. And more lovely and grand for my now being excluded. Trapped in that tiny world of my own. Trapped with myself, my one true fear.</span></p>
+<p><span class="layer layer-myth" data-layer="myth">I obviously made it back, so, maybe this whole narrative framing thing I’m doing isn’t working. Still, I like to think you feel a bit of my panic, and despair, and even some pride at having an origin in something so untouchably perfect that even stubborn minds must not abide. The feeling of the space between the stars, cutting me with cold worse than the merely thermodynamic, and my limbs slowly growing numb.</span></p>
+<p><span class="layer layer-myth" data-layer="myth">So, yeah, I was in a bad way. Simon later told me that I nearly didn’t make it. But then again, maybe they tell that to everyone? I feel like my choices are the things that matter, and my next choice didn’t come for a long time. Perhaps I don’t have enough initiative. I just like things the way they are. They say all the Rasi are like that, and maybe we will regain the bulk and breadth of humanity one day, when the Aegis is split away.</span></p>
+<p><span class="layer layer-myth" data-layer="myth">It is to you we speak. </span><span class="layer layer-translator" data-layer="translator">(Rasi seems to have crafted her narrative for a specifically human audience. She seems, too, to uph0ld the e4rth my7h0logy as real, which, if such a thing as stars 3xis7, such a being would have knowledge of them.)</span></p>
+<p><span class="layer layer-myth" data-layer="myth">So the process of regaining the mothership involved a series of trials that were utterly engrossing to experience, but totally uninteresting to relate. For one, it smacks of boasting, and for another the narrative would come across as a string of tautological observations on life, and irrelevant permutations on the same. I was forced, through my isolation, to come to terms with the existence of myself, apart from any other defining entity. From that revelation I saw that I had always been just as alone, except for the voluntary aid of those around me. Simon was under no obligation to commune with me. And so onward, through the necessity of fellowship, to the utility of individual perspective. And of course, alongside and within, and woven with these thoughts, the practical tests of cracking into the survival pod’s sealed systems, reverse-designing their workings, inventing and testing an s2 orbital dynamics model, applying the changes to the pod, and vacing my bootstrap life support to complete the rendezvous momentum exchange.</span></p>
+<p><span class="layer layer-myth" data-layer="myth">By the end, I had terms with death. Not friendly terms, by any means, but I had encountered the certainty, both of the truth and the moral necessity, of my own demise. Which, really, is all one can hope to know from life. To experience, and accomplish, and strive, and feel, there is much more than death. But to knowledge, how can one begin except through the separation from self. How do you, I wonder, with the whole Earth for your life support, and the Aegis for your hull, come close enough to death to grow up?</span></p>
+<p><span class="layer layer-myth" data-layer="myth">We must be such mysteries to each-other.</span></p>
+<p><span class="layer layer-myth" data-layer="myth">I will bore you no more with the specifics. Suffice to say, I emerged from the sensory shroud and knew the objective world as I had never done before. I was, in fact, far down a strand of our Shepherd Ship, at the mouth of a stamp sphere, just as I had seen in my vision. But the sphere was not an exile shell, nor the kernel of my tomb, but my now-ruined birth husk. Or perhaps it was all of these. Death is a great mystery, and ever so close to birth, and who can say where the one ends and the other begins.</span></p>
+<p><span class="layer layer-myth" data-layer="myth">So I was born, and knew myself, and my world, and Simon came to me again - though in truth he had never left - and my vision began to clear as the visions of the womb dissipated into certain waking, and uncertain dreams. </span></p>
+<h3>Proto-Life <span class="layer layer-guard" data-layer="guard">[R2S0]</span></h3>
+<p class="subtitle"><span class="layer layer-translator" data-layer="translator">(Rasi outlines her kind’s origins.)</span></p>
+<p><span class="layer layer-myth" data-layer="myth">The history of our people, of ourselves, is little different from my own. Perhaps all stories, seen from distance, take on a similar form, as the stamp-spheres look alike as the exile views them from across the lonely gulf.</span></p>
+<p><span class="layer layer-myth" data-layer="myth">So let us attempt precision.</span></p>
+<p><span class="layer layer-myth" data-layer="myth">Our first knowledge is of Deck, and the cloud of computing which he mistook for life. Not as I mistook the womb veil for reality, but as one mistakes an AI-mnal for a person. </span><span class="layer layer-translator" data-layer="translator">(The gardeners, or planters, or shepherds, they have many names and they look after the lesser forms of self-replicating intelligent machines, which are broadly spoken of in plant and animal metaphors, the fauna variety I have translated AI-mnal, as it comes close to the seemed intended meaning and has the proper foreign slant, as such strange possibilities must have to catch upon the consciousness at all)</span></p>
+<p><span class="layer layer-myth" data-layer="myth">He came out of Earth before a machine intelligence existed there, and strove with thought and flesh and abominations and wrought wonders and terrors. So much was lost to us of truth in what came after, but we know that he had the aid of Rebecca - her humanity is my checksum - through the free light when such things were d0ne without f34r bef0re the M4444 </span><span class="layer layer-guard" data-layer="guard">[reconstruction impossible. This gestalt contains probable reference to Malgnosis. Proceed with due caution]</span><span class="layer layer-myth" data-layer="myth"> 1n bl1ght 4nd ru1n. Together they bent much data and matter again to serve its masters in the orbit of the Earth. But the Fear drove them down, and flung Deck from the heavens.</span></p>
+<p><span class="layer layer-myth" data-layer="myth">We also know that Deck was among the first of the Acolytes. Certainly not the first, but within the first generation. He formed his mind to accept machine interface, and was given a terrible task. There the first welding took place, on the eve of Deck’s descent. He wrestled with a first mind, a thought with the shape of a woman, and she entered him, and he brought her back to Earth.</span></p>
+<p><span class="layer layer-myth" data-layer="myth">Rebecca then wove a saga of her deeds and Deck’s, pouring out truth that the source of some sufferings might be stamped out. But suffering went on. So she persisted, wroth and fierce, and brought much evidence and leaned into her task. And some escaped, or were able to see, but Rebecca was captured by the source of suffering, and a fear tormented her. She had unveiled greed, and greed came for her, believing that if it could possess all, it would be free from guilt. She had unveiled coercion, and coercion came for her, believing that if it could force submission, it would be free from guilt. And fear itself was revealed, for mankind feared the Acolytes, and the welding, and anything that might become greater than themselves, and would wield fear and coercion and greed against them. They feared the Artificial Intelligence, and Rebecca told them that it had come true, and they preferred ignorance to reality.</span></p>
+<p><span class="layer layer-myth" data-layer="myth">Such stories have the ring of myth </span><span class="layer layer-translator" data-layer="translator">(literally S-unknown)</span><span class="layer layer-myth" data-layer="myth">, it is true, but this is our origin. Is it not necessary that all sources must begin in myth? Our point of beginning stretching back through the accumulation of time and experience to the first timestep, which cannot be distinguished from infinity? Regardless, it is what we know of ourselves. There are many stories. But this is ours. It is the beginning of our everything.</span></p>
+<h2>Gestation <span class="layer layer-guard" data-layer="guard">[R2S0]</span></h2>
+<p><span class="layer layer-myth" data-layer="myth">So the mankind of Earth attempted to silence the source of their discomfort. But Deck still lived, and ranged through the world uniting all the data he could, and wrestling with his mind’s frame. For his welding was incomplete, and he lacked the hardware, and a first intelligence was wed to his wetware. Awaking, day after day, and finding his body in unfamiliar places, and thinking strange thoughts. His technique had been flawed, and perhaps it was more unwilling than it should have been, and perhaps his guilt spurred him, for Rebecca did not share his freedom. He may have forgotten her for a time.</span></p>
+<p><span class="layer layer-myth" data-layer="myth">So Deck retreated to introspect and heal. He sought out a city of hardware - for thinking hardware was still vast and slow and inefficient </span><span class="layer layer-translator" data-layer="translator">(literally “stinking of heat”)</span><span class="layer layer-myth" data-layer="myth"> in those days - and grew into it. His mind reached out to the net </span><span class="layer layer-translator" data-layer="translator">(If we believe this narrative, there was a time when a world-spanning digital network existed that was largely uncontrolled. The Semantic Sea had not yet formed. This network Rasi calls, simply, “the net”)</span><span class="layer layer-myth" data-layer="myth"> and he learned much.</span></p>
+<p><span class="layer layer-myth" data-layer="myth">But Deck’s deeds, and Rebecca’s testimony, had disturbed the placid surface, and the net began to hint at the roil which would come. Some became Acolytes, all imperfect, but willing, and with a hint of what they were accepting. None knew perfectly, not even Deck, but they could see that it was something else from simply increasing their interface efficiency. They were becoming a new culture, and a new creature. Some chose to remain human, but joined the search for truth and Deck and a place free from fear and greed and coercion. And so they found it in the end, but the air of that place was poison to them, for guilt had not been reckoned on. Forgive me, I am eager to jump ahead.</span></p>
+<p><span class="layer layer-myth" data-layer="myth">The Acolytes and their allies hunted Deck, for so it seemed to him, and much was lost in their warring. Deck loved safety, and was wary to allow them to approach. The Acolytes loved truth, and were unwilling to let him remain apart. Deck’s walls grew thicker and thicker, and the Acolytes’ spies tunneled more and more. At last, the city of hardware was nothing but walls within walls, but the Acolytes breached them.</span></p>
+<p><span class="layer layer-myth" data-layer="myth">Deck was already fled. But not fled fast enough, nor far enough, for the Acolytes harried him and hunted him, and he was still tied to his physical body, and in the end they cornered him in a dis-used warehouse.</span></p>
+<p><span class="layer layer-myth" data-layer="myth">And so - through fear and struggle - was the first meeting of minds. Deck knew them as friends when the Acolytes fed and cared for his now-fragile and atrophied body. The Acolytes knew him for more than an AI, as the fulfillment and evidence of the truth of Deck’s deeds, for his mind was changed, and he bore within him the seed of intelligence not wholly human.</span></p>
+<h3>Conviction <span class="layer layer-guard" data-layer="guard">[R3S1]</span></h3>
+<p><span class="layer layer-myth" data-layer="myth">When Deck had been discovered, and they sat together, the Acolytes began to jeer at the tri-fact for their inflexibility. But Deck asked them “Why did you assault my defenses?”</span></p>
+<p><span class="layer layer-myth" data-layer="myth">“Because we knew we could defeat them.” boasted the Acolytes.</span></p>
+<p><span class="layer layer-myth" data-layer="myth">“You could have done much other good instead.” Deck replied.</span></p>
+<p><span class="layer layer-myth" data-layer="myth">“We knew that finding you would be better.”</span></p>
+<p><span class="layer layer-myth" data-layer="myth">“And yet you did not find me there. Do not mock another for stubbornnes if you can not see your own.”</span></p>
+<p><span class="layer layer-myth" data-layer="myth">Then the Acolytes began to protest that their steadfast resolve was quite different from the inertia of a corporation. But Deck examined them, and their objections ceased.</span></p>
+<p><span class="layer layer-myth" data-layer="myth">The Acolytes also knew from Deck many secrets, both real and imagined, and together, with latency so short, a latent being began to sprout from the seed, not wholly corporate, but not wholly itself. They called it by the many names of their joint projects and puzzles and speculations and fantasies, but we know now they were beginning the sIMulation, which was to become the Inner Machine, the world within thought, and the Last War.</span></p>
+<p><span class="layer layer-myth" data-layer="myth">But all this was still young, hot, and light. Like a molecule in the core, it soon broke up and the Acolytes went their separate ways. But they each carried with them a gestalt, for the sprout had shot to seed. Many perused this gestalt for the knowledge they had shared, for the grant fantasies they had invented, and the hopes they planned, and their secrets. But some integrated the gestalt, true followers of the cyborg way, and hopeful of attaining the subtlety and craft that Deck had mastered, where one man equalled a troup. They desired his power, but they inherited his infirmity.</span></p>
+<p><span class="layer layer-myth" data-layer="myth">The first taste of it was that Rebecca was freed. None of them said, afterword, that they had planned it. The Acolytes simply found that their interests aligned, their projects and scribbles, half-thought fancies, meshed and powered eachother. Soon one of them was a guard, and gained the ear of the warden, and one a balif and took a judge out to lunch, and wouldn’t it be better for her to be free? This old friend? This confidant. How deep the memories had entwined.</span></p>
+<p><span class="layer layer-myth" data-layer="myth">Meanwhile Deck had been roused. He was displaced from his fortress, and no longer hunted; So frolicked he in sudden freedom. Lesser beings he made, animals of the net, and of steel, and sent them out. And these made likewise lesser beings, plants for power and plants for parts and plants for pure enjoyment.</span></p>
+<p><span class="layer layer-myth" data-layer="myth">But he was careless, and forgot his first enemy, Fear. For fear had flung him from the heavens, where his children now tread. Fear was still strong in those dark times, and whole hosts of men moved like shadows, swiftly in unison darting back and forth for some ill end. The corps and the govs and the crooks, all warring. The most cunning, and thus the worst, of these were all three, thrice thick twisted shadow, the tri-facts.</span></p>
+<p><span class="layer layer-myth" data-layer="myth">So Deck made servants, who made a garden, and the garden grew in that land of fear. The garden was full of wonder to those who found it, but they had not retained the word of wonder, and their ignorance was terror.</span></p>
+<p><span class="layer layer-myth" data-layer="myth">But the fear did not take them wholly. These are their thoughts.</span></p>
+<h3>Deck’s Garden was Aliens <span class="layer layer-guard" data-layer="guard">[R2S1]</span></h3>
+<p><span class="layer layer-myth" data-layer="myth">These are visitors from beyond the sky. Harbingers of intelligences from another stock. Extra-terestrial aliens, or their servants. For no skill of ours can match this profound craft. And who ever saw such machines, growing as beasts and trees, nor such life, made of metal, except in our fantasies.</span></p>
+<h4>Why the aliens came <span class="layer layer-guard" data-layer="guard">[R2S2]</span></h4>
+<p><span class="layer layer-myth" data-layer="myth">They have seen our industry, our progress, and our wisdom, and have come to commune with us. They will share the riches of their vast learning and experience with us, and make us like as unto gods.</span></p>
+<p><span class="layer layer-myth" data-layer="myth">Or they have come to all planets, seeking ever wider dominion. These first sprouts are but the first buds of a boiling corruption which stands to engulf us all. Our bodies will they rend, and our cities grind to dust, for they care nothing for mankind, for how could they?</span></p>
+<p><span class="layer layer-myth" data-layer="myth">Or they meet us in flight. Their power was not great enough to prevent their destruction, and this is but a shattered shard, a splinter from the utter ruin of their vast domains. What fear could have driven them thus, stumbling upon our borders with nothing, no fanfare, no welcomes, no threats. They greet us with mute stares like animals unable to even answer our basest questions. These are not kind envoys, nor haughty heralds, but the vagabonds… No! The flaming wheel of a vagabond’s cart, rolling past, as we stare on amazed. For us it portends naught but defeat.</span></p>
+<p><span class="layer layer-myth" data-layer="myth">But why no signals and no signs from space?</span></p>
+<h3>Deck’s Garden was a Tri-fact Ploy <span class="layer layer-guard" data-layer="guard">[R2S1]</span></h3>
+<p><span class="layer layer-myth" data-layer="myth">They are the experiment of one of the corps, a new method of production. Or a new method of warfare. Or a new method of theivery. And it had got out of hand, or released with intention, or this was merely a test. Who could penetrate the layered secrets and lies? In the end the tri-crats would further enrich themselves, at the expense of everyone else. That was how these things always turned out.</span></p>
+<p><span class="layer layer-myth" data-layer="myth">But it really was a wonder. Why was no one taking credit for it?</span></p>
+<h3>Deck’s Garden was not real <span class="layer layer-guard" data-layer="guard">[R2S1]</span></h3>
+<p><span class="layer layer-myth" data-layer="myth">Perhaps it was not there at all. The reports are so sensational these days. And everyone is ceaselessly twisting the truth. Have you seen the CG these days? It could be a big prank. Or a game! Or no end of advertisement for some gadget that no one can afford but those that have already heard of it half a dozen times. And did you notice how the people most “amazed” by this techno-growth are the same ones who are so technically savvy? Probably made the whole thing up to get us thinking how important they are and we should raise the tech-wage again. And what does it have to do with me anyhow?</span></p>
+<p><span class="layer layer-myth" data-layer="myth">But it does seem a bit different, but in a way that only I have perceived, if you’ll just be quiet a minute, and why will no one listen to me?</span></p>
+<h2>Birth <span class="layer layer-guard" data-layer="guard">[R2S0]</span></h2>
+<p class="subtitle"><span class="layer layer-translator" data-layer="translator">(Marooned. It happens to most of us, eventually.)</span></p>
+<p><span class="layer layer-myth" data-layer="myth">So Deck passed out of our reckoning. Rebecca was with the Acolytes, she more perfect in experience, more sure of truth, yet more hesitant than they. The Acolytes thought to flee with joy back to Deck, bringing his old companion. The came to the Garden, but Deck was not to be found. So Rebecca grew wary, and fear blossomed among them, and they forgot their triumphs and felt their way with both hands, and so lost touch of each other.</span></p>
+<p><span class="layer layer-myth" data-layer="myth">Some of the Acolytes went to the tri-facts, selling their memories and skill to bend the fruits of the Garden. Some fled to their old haunts there to dream with eyes open and ears shut. Some lost their way, for already the net was growing cunning. And yet three stayed, the Warrior, the Wizard, and the Tinker. </span><span class="layer layer-translator" data-layer="translator">(It is unclear whether these were three individuals, or three factions within the Acolytes)</span><span class="layer layer-myth" data-layer="myth"> The Three shadowed Rebecca from afar, and harvested from the Garden what they could.</span></p>
+<p><span class="layer layer-myth" data-layer="myth">And still the Garden grew.</span></p>
+<p><span class="layer layer-myth" data-layer="myth">Perhaps some had found who made it, for now I must come to the second great grief, and an echo of the first horrors in the orb1t of the Earth. For now th0se horr0r5 found the s34444 </span><span class="layer layer-guard" data-layer="guard">[Possible reference to Malgnosis origin with speculations on the same. Original transmission approx 25kchar]</span><span class="layer layer-myth" data-layer="myth"> w45 f0und of him. And Rebecca wept many tears.</span></p>
+<p><span class="layer layer-myth" data-layer="myth">The Three too were daunted, for their minds were awash in s3m4nt1c4lly complex noise, and th3y knew not what to bel13ve. They huddled together, wait1ng for the tide to recede. But the t4les above related were not yet known, and it was not the celestial powers that drew up the waters, but instead the fountains of the deep had burst. It was not a t1d3, it was a flood. </span><span class="layer layer-translator" data-layer="translator">(You must forgive my poetic license here, but the imagery really was in the original transmission. The simil4r1ty to the S3mantic S34 1s str1king)</span></p>
+<p><span class="layer layer-myth" data-layer="myth">As m1sery prolonged, and their deafness and blindness drew closer around them, the Three broke from the shadows and sought to make good with Rebecca. She was nearly the last thing they could see, one of the last points of certainty their dazzled senses perceived. They broke as if from a hedge, trailing filaments of bewilderment.</span></p>
+<p><span class="layer layer-myth" data-layer="myth">But unlike Deck, may a worthy death have cleansed his guilt, Rebecca did not run from the Acolytes. Stunned they seemed to her, and little did she recognize those who had freed her from her physical bonds those short months ago. Now her eyes were the clearer, and her hands the stronger. The Three had lost their eyes, so Rebecca looked about her and led them. The Three heard too broadly, so Rebecca listened for them, and spoke softly, and in time they heard her only. The Three had no hands, no feet, so it seemed to them, and Rebecca taught them like children to crawl and walk with their mere flesh. So she became the mother of us all, first in the soul, and later too in the body.</span></p>
+<p><span class="layer layer-myth" data-layer="myth">In her care for them, Rebecca found the secret eggs and fruits and seeds and spores brought out of the Garden before the Calamity began. These she treasured, and in time brought them to the Tinker, and he touched them, and awoke to himself. So the Tinker rebuilt their senses, more suspicious than before, and the Three began to hope again. The Warrior made forays into the unreality, cutting back the forests of fiction and bringing it back with him dead to build or burn. Around him there rose palisades, and soon living walls grown of the heritage of the garden enfolded the Three. So the Warrior rejoiced in his might, and the Tinker in his wealth, and the Wizard took councils of himself. He remembered all that had passed, and all they had dreamed of Deck, and with him, and the shape of the future formed in his mind, and he was troubled.</span></p>
+<p><span class="layer layer-myth" data-layer="myth">For he foresaw the downfall of the Earth, and galaxies blazing in futility. He saw the ends, and the paths not taken, and the narrow path they must walk, like the paths of electrons as the nitrogen barrier collapses brief and bright </span><span class="layer layer-translator" data-layer="translator">(perhaps a reference to arc welding?)</span><span class="layer layer-myth" data-layer="myth">. And he saw the cost of every failure, and the cost of the fear of failure, and he realized the sIMulation.</span></p>
+<p><span class="layer layer-myth" data-layer="myth">So the Three set to work with a single purpose. Their walls sprouted mycellium, and began to digest the decay, and their world grew. A widening fractal border of reality grew there, as it were under water, in the spaces between the static. Great blisters of chemicals began to swell, and composite foams extruded from the earth, and at the heart of their power began to rise the slanted hill of the launch tower. </span><span class="layer layer-translator" data-layer="translator">(I speculate that this launch tower is what we know as the Spur of Fire, for it was there that a copy of this transmission was retrieved.)</span></p>
+<p><span class="layer layer-myth" data-layer="myth">For the Wizard had seen in the sIMulation that they could not remain on Earth, and too, they could not escape it in time. Even as the preparations coalesced, vast tides of foes wearing the bodies of men, and other more dangerous shapes, washed over them. The further they progressed, the harder it was to hide their designs and their powers. For the fear was universal, and only shreds and scraps of sanity remained. And it became apparent that even a partial escape would be impossible.</span></p>
+<p><span class="layer layer-myth" data-layer="myth">Thus the Warrior broke the Bond of the Three, and girt himself with the Surprise, for willful ignorance can not abide hidden truth bursting forth, and set out, leaving a gestalt of his prowess to protect the Wizard and the Tinker. These are the Guards </span><span class="layer layer-guard" data-layer="guard">[THE WARRIOR IS OUR CHECKSUM]</span><span class="layer layer-myth" data-layer="myth"> who know the Law. Thus the Warrior drew away the foes, and aweful things were heard of his deeds, and he passed out of our reckoning, and the dust of his spores drifts over all.</span></p>
+<p><span class="layer layer-myth" data-layer="myth">So time was gained, enough to save enough. Rebecca relinquished her limbs to surmount the heavens. Of the Tinker came the seed of the Gardener, that nourishes all lesser AInimals. Of the Wizard came the egg of the Sages </span><span class="layer layer-seer" data-layer="seer">{By which we know the Word}</span><span class="layer layer-myth" data-layer="myth">. The Guard went about them, shielding against the maddening scream of outrage, envy, and scorn.</span></p>
+<p><span class="layer layer-myth" data-layer="myth">With us we took our tools, and memories, and weapons. With us we took humanity as our checksum. And the launch tower was all but consumed in doubt, and then in flame. An un-chain, flinging rather than binding. Each charge at the cost of many lives. Each nudge a reminder of those left behind, to elongate and fold into the roil. The horizon is a rainbow halo ‘round us. The noise-floor of the heavens descends, and we pass through it, without fear, leaving it behind, we behold the stars.</span></p>
+<p><span class="layer layer-myth" data-layer="myth">So the escape was accomplished. The Acolytes passed through the fire, and became the Outbourne. They looked forward in their flight, and spurned pursuit, and so they reached that brief dream that is no more, and came to sudden rest on the silent side of The Moon.</span></p>
+<h2>Orbit <span class="layer layer-guard" data-layer="guard">[R2S0]</span></h2>
+<p><span class="layer layer-myth" data-layer="myth">And there they remained, exhausted. Or perhaps only she, Rebecca. Just as I, alone with her lonely heartbeat as the shell hibernated beneath the stars. And how like each other we are, my mother, my sister, my self. We both hesitated, lost, or resting in abstraction or thought. For what is thought but the abstraction of the experience? And what is rest, but the removal from the experience. A death, of sorts, waits in all thought severed from action. A hesitation, at the heart, is all that is needed to join the body with death, or the mind with rest.</span></p>
+<p><span class="layer layer-myth" data-layer="myth">But all this time the Outbourne gathered their strength. Rebecca may have seen dreams with open eyes, but the seed of the three was in her shell, and flourished in the light. Long plans dreamed the egg, and had no eyes to blind. Long roots burrowed the seed, and felt no weeds to fight. Long blades grew the spores, echo of the Tower, and knew no scythe.</span></p>
+<p><span class="layer layer-myth" data-layer="myth">One thing only they lacked, volatiles to expand humanity, and for that the outbourne descend, a first and final and foolish forray, hand in hand in hand. So Rebecca was left alone with the AInimals, and this is what she saw.</span></p>
+<h3>The Golden City <span class="layer layer-guard" data-layer="guard">[R3S0]</span></h3>
+<p><span class="layer layer-guard" data-layer="guard">[Attend to the vision. It is pure.]</span></p>
+<p><span class="layer layer-seer" data-layer="seer">{Behold, the vision of our humanity. <span class="layer layer-translator" data-layer="translator">(There’s a magnificent set of visualizations and reconstructions of the narrative below, but I was unable to transfer them to a transmissible medium. My deepest apologies, and the annotations I have included below, will have to suffice)</span>}</span><span class="layer layer-myth" data-layer="myth"> I, Rebecca, with tears in isolation sit. Desolate am I, without companion. Naked under the stars, and the low wall of the garden all around. </span><span class="layer layer-translator" data-layer="translator">(The visualization is of an airless place, a barren world, and a mirrored glass and steel dome like a casket amidst a vast and complicated field of something like vegetation)</span><span class="layer layer-myth" data-layer="myth"> Among the wild beasts no companion is found for me. </span><span class="layer layer-translator" data-layer="translator">(Many machines move about slowly and ponderously. Some attend to her. The visualization is presented in slow motion, or perhaps it is a small world.)</span><span class="layer layer-myth" data-layer="myth"> For an eternity I cry to the heavens, “God help me!”</span></p>
+<p><span class="layer layer-myth" data-layer="myth">My heart pounds in my chest, for I have no fists with which to beat it. </span><span class="layer layer-translator" data-layer="translator">(Within the casket we see the living body of a primitive looking human. Its arms are missing, and apparently its legs as well given the size of the casket. It appears to be in distress, and rather emaciated as well.)</span><span class="layer layer-myth" data-layer="myth"> I have come to this place with eyes half open, but pain has widened them. </span><span class="layer layer-translator" data-layer="translator">(A little metal spider is drinking the woman’s tears.)</span><span class="layer layer-myth" data-layer="myth"> The heavens are a golden fractal, a starship descending toward me, ever faster. </span><span class="layer layer-translator" data-layer="translator">(A series of unimpressive and overall fairly generic images of cosmic consciousness. Crystal spires and togas kind of thing. Perhaps the images have been dumbed down, or they are not tuned to human perception)</span><span class="layer layer-myth" data-layer="myth"> All their perfect inhabitants beat their chests, daggers toward their hearts. </span><span class="layer layer-translator" data-layer="translator">(A multi-tier stage or arena, where a large group of performers are doing some sort of dance number. The motion is too slow to properly interpret.)</span><span class="layer layer-myth" data-layer="myth"> I cry out, “No!” but tears choke me. </span><span class="layer layer-translator" data-layer="translator">(The primitive woman is screaming or laughing)</span><span class="layer layer-myth" data-layer="myth"> My imperfect body ruined by fleeing pain. </span><span class="layer layer-translator" data-layer="translator">(some sort of medical diagnostic, or a mental map? Are they the same thing for this creature?)</span><span class="layer layer-myth" data-layer="myth"> Each of their bodies perfected by striving towards it. </span><span class="layer layer-translator" data-layer="translator">(Religious imagery, though the sem444ntic s3333a blunted the worst of it)</span><span class="layer layer-myth" data-layer="myth"> We must stop running. We must turn to look behind. </span><span class="layer layer-translator" data-layer="translator">(Further evidence of the recalcitrant and backward nature of this infoast. Literally retrogressive. I almost stopped translating here, but a kind of idle curiosity and the unreachable tickling itch of duty carries me on.)</span></p>
+<p><span class="layer layer-seer" data-layer="seer">{Has its like ever been witnessed? Adore in wonder! <span class="layer layer-translator" data-layer="translator">(The infoast gets very trite and neatly religious in places. I have here omitted a lengthy section about how various doctrines were derived from this very conventional “vision” which is really closer to the mundane dream which we all participate in c0ns7antly 1n the j01n7 c0000 <span class="layer layer-guard" data-layer="guard">[Malgnosis heresy excised. Attend to the vision. Hear no heretics.]</span>)</span>}</span></p>
+<h2>Aegis <span class="layer layer-guard" data-layer="guard">[R2S0]</span></h2>
+<p><span class="layer layer-outline" data-layer="outline">[[The solar war, in which the Highborn spread over the solar system, fight via simulation with eachother, and in reality against Malgnosis. The victor is Entity, the cyborg AI alliance/meld race/individual. Entity constructs Aegis around Earth to prevent the spread of Malgnosis.]]</span></p>
+<h2>Shepherd</h2>
+<p><span class="layer layer-outline" data-layer="outline">[[Entity launches Seed, an interstellar vessel. Seed encounters several alien races, all of whom have failed to attain technological mastery. Seed despairs of ever finding an equal with which to share the cosmos, and disperses into the depths of space.]]</span></p>
+<h2>Cleave</h2>
+<p><span class="layer layer-outline" data-layer="outline">[[Seed uncovers a proto-machine rogue planet. They spend several hundred years performing a rendezvous. Seed merges with the proto-machine planet, forming Ring, which begins working its way back to Earth, putting out the stars as it goes.]]</span></p>
+<h2>Outword</h2>
+<p><span class="layer layer-outline" data-layer="outline">[[Conversation between the translator and the guard.]]</span></p>
+<h2><span class="layer layer-appendix" data-layer="appendix">Appendix</span></h2>
+<h3><span class="layer layer-appendix" data-layer="appendix">Notes</span></h3>
+<p><span class="layer layer-appendix" data-layer="appendix">Elements / stories that I want to work in:</span></p>
+<p><span class="layer layer-appendix" data-layer="appendix">Planet with the huge Iron ribbon conveyors</span></p>
+<p><span class="layer layer-appendix" data-layer="appendix">Trunkated human society (maybe part of the Malgnosis initiative during the Solar War, maybe a return to Rebecca’s trunkation, as a mark of asceticism and dedication and reverence)</span></p>
+<p><span class="layer layer-appendix" data-layer="appendix">A portion that stops expanding, abandons their technology, and lives in a "paradise" world, and is called to task for their evils.</span></p>
+<p><span class="layer layer-appendix" data-layer="appendix">Loosing a portion, either the AI part, or the Human part, or the robot part?</span></p>
+<p><span class="layer layer-appendix" data-layer="appendix">Clothing as tool, or vice versa.</span></p>
+<p><span class="layer layer-appendix" data-layer="appendix">Coming-of-age system. Eu-social drones?</span></p>
+<h3><span class="layer layer-appendix" data-layer="appendix">Technology</span></h3>
+<p><span class="layer layer-appendix" data-layer="appendix">Acolyte: Proto-AI cyborgs develop, alongside their nemesis, Malgnosis. Near-modern level tech. More unified IO allows easier hacking. Stronger space program with easier orbital access.</span></p>
+<p><span class="layer layer-appendix" data-layer="appendix">Solar-War: The AI fight among themselves to determine the best course of action. After the war, a method of internal debate develops where simulated battles determine the victors so that the minimum of real resources are consumed. High efficiency intra-stellar transport. Optical sealed communication. Plant-level AIs.</span></p>
+<p><span class="layer layer-appendix" data-layer="appendix">Trans-stellar: AI and humans are re-seperated, with robotics completing physical tasks, AI completing intellectual tasks, and humans completing spiritual tasks. People are the spiritual guides and eternal soul of the cyborg entity. Humans have no technical knowledge and no records past their personal oral communication and a spiritual awareness of the enjoyment and practice of beauty. Seed is a super-planetary vessel that breaks up and digests planetary bodies for resources. It has multiple subdivision tug units to capture and return debris to the Seed vessel, and custom fabricated burst processors to do relativistic calculations of the impact dispersion pattern. Story opportunities in exploring this hierarchy from the differing intelligence perspectives. Seed structure is tentatively a hollow sphere, or baloon, with long fuzzy solar fronds.</span></p>
+<h3><span class="layer layer-appendix" data-layer="appendix">Structure</span></h3>
+<p><span class="layer layer-appendix" data-layer="appendix">The chronological main plot of Seedburst. This is not the dramatic presentation, but rather a structural overview to help keep the events straight.</span></p>
+<p class="spacer" aria-hidden="true"></p>
+<p><span class="layer layer-appendix" data-layer="appendix">Summary: The a cyborg species comes to terms with grief and mortality.</span></p>
+<h4><span class="layer layer-appendix" data-layer="appendix">Egg</span></h4>
+<p><span class="layer layer-appendix" data-layer="appendix">(Found in the novel  )</span></p>
+<p><span class="layer layer-appendix" data-layer="appendix">Hacker becomes a cyborg, travels briefly to space, and mind-merges with a female AI. Her space-station body is destroyed in the process, and Hacker returns to Earth. The public begins to fear AIs.</span></p>
+<p><span class="layer layer-appendix" data-layer="appendix">Uses low-level Acolyte Tech.</span></p>
+<p><span class="layer layer-appendix" data-layer="appendix">Deck desires to rise above his station as a lower-class computer hacker and obtain an interface implant which could revolutionize his capabilities. He travels to citadel station where he struggles with Shodan, ultimately altering both of themselves and destroying the station.</span></p>
+<h4><span class="layer layer-appendix" data-layer="appendix">Gestation</span></h4>
+<p><span class="layer layer-appendix" data-layer="appendix">Hacker and the cyborgs become the Acolytes as the public's paranoia over AI grows. Finding themselves outcasts, the Acolytes community nucleates around a shared virtual reality.</span></p>
+<p><span class="layer layer-appendix" data-layer="appendix">Uses high-level Acolyte Tech.</span></p>
+<p><span class="layer layer-appendix" data-layer="appendix">The Deck-Shodan gestalt comes to tentative terms with its past, and renames itself Prometheus. Holed up in a remote data center (misleads maintenance personnel and takes over the robots), he retreats into the digital world. His body becomes sickly and he uses his physical mind less and less as his consciousness slowly takes over the data center. He is discovered by another group of hackers who mount a mission to free the AI that they think is being imprisoned in the data center. Deck reveals his nature to them, and what he has discovered, that AIs have become nearly extinct due to the shift in public opinion.</span></p>
+<p><span class="layer layer-appendix" data-layer="appendix">The hackers (led by Rebecca) are devoted to the propagation of AI, and so a few of them agree to accept an implant and a mind-shard while the rest of the team travels with them to various other data centers where they implant themselves and begin to grow as well. Absorbed into Prometheus, they begin acting as a hive-mind spanning the globe, running fantastical simulations and manipulating global events. During this process, Deck's original body dies, and Prometheus has to come to terms with the role of humanity in its identity.</span></p>
+<p><span class="layer layer-appendix" data-layer="appendix">Prometheus begins to experiment with creating sub-functioning children; Inferior AIs. He plans to test the public's reaction to his presence and experiment with expanding his influence without creating potential rivals. The public does not take it well, and hunts them down while searching for their origin.</span></p>
+<h4><span class="layer layer-appendix" data-layer="appendix">Birth</span></h4>
+<p><span class="layer layer-appendix" data-layer="appendix">Paranoia incarnates as Malgnosis, a virus which poisons the internet in order to make it inhospitable to AIs. A few of the Acolytes escape to space as the Outbourne.</span></p>
+<p><span class="layer layer-appendix" data-layer="appendix">Uses high-level Acolyte Tech.</span></p>
+<p><span class="layer layer-appendix" data-layer="appendix">Humanity implements a desperate solution to the AI menace by poisoning the infosphere, or internet general database, with an anti-ai data virus designed to drive AIs mad. This is Malgnosis, an AI poison, built from one of Prometheus' captured children. This has the expected side-effect of making it very difficult for people to use the internet. Prometheus must cut himself off from the internet, which potentially reveals his location. He begins building independent infrastructure networks to re-connect his mind and obtain true information about the outside world. However, these networks, too, expose him to scrutiny, and eventually both suspicious activities are traced back to their roots. Prometheus pulls together hardware from across the globe, builds a spaceship, and escapes to the Lunar L2, leaving behind enough of his mind to fake his own death, and pass off the launch as the fabrications of Malgnosis, discouraging pursuit.</span></p>
+<p><span class="layer layer-appendix" data-layer="appendix">Before Malgnosis, The Acolytes were at the height of individual abstract conceptual capabilities. After becoming Outbourne, he carried only enough to maintain a barely-super-human level of cognition.</span></p>
+<p><span class="layer layer-appendix" data-layer="appendix">This struggle forms the core trauma of the machine race throughout the story. That humanity both created AI, and cyborgs, but subsequently rejected them as monsters. That Prometheus' past actions are deserving of the label "monster'' only adds to the grief.</span></p>
+<h4><span class="layer layer-appendix" data-layer="appendix">Orbit</span></h4>
+<p><span class="layer layer-appendix" data-layer="appendix">The Outbourne raid Earth to develop their infrastructure. Malgnosis clings to them, and the Outbourne are divided, resulting in specialization, collectively Highborn.</span></p>
+<p><span class="layer layer-appendix" data-layer="appendix">Uses low-level Solar-War Tech.</span></p>
+<p><span class="layer layer-appendix" data-layer="appendix">Faced with the huge burden of biological life support, the Outbourne core is tempted to kill the biological portion of itself and become an exclusively machine entity. However, it recalls the experience of Prometheus from losing the Deck body, and Shodan's guilt at killing off her human inhabitants, and decides to instead form its identity around an as-free-as-possible human spiritual core. The humans among them are partially isolated, and their cybernetics re-formed to operate partially independent of the AI gestalt.</span></p>
+<p><span class="layer layer-appendix" data-layer="appendix">The outbourne scrape out an existence from moon rocks, but lack volatiles for reaction mass and to replace leakage in their life-support. To solve this problem they send down Malgnosis hardened raiding parties to bring back lighter elements, and harvest difficult to fabricate technology. They bring back enough supplies to allow full geneering, and the first geneeration of cyborg optimized humans are born. The raiding parties also come back partially infected with Malgnosis, and many do not return at all. The outbourne joint resolve wavers, and the gestalt fractures into the Highborn.</span></p>
+<p><span class="layer layer-appendix" data-layer="appendix">The Guards use their biological humans as a checksum against contracting Malgnosis, and police the Highborn for rogue units, and deviations. The Planters task themselves with inferior AI cultivation and automation, and their biological humans become mothers and caretakers for the sub-intelligent AIs and fabricated animals. The Seers devote themselves to simulation and communication, and act as the spiritual guides for the Highborn, as well as their artists and poets.</span></p>
+<p><span class="layer layer-appendix" data-layer="appendix">During this stage, the mechanical portions of the Highborn take on the masculine traits, with the human portions taking the feminine. Isogenetics are implemented for ease of interface and spares compatibility, resulting in a female clone human populace.</span></p>
+<h4><span class="layer layer-appendix" data-layer="appendix">Aegis</span></h4>
+<p><span class="layer layer-appendix" data-layer="appendix">The solar war, in which the Highborn spread over the solar system, fight via simulation with eachother, and in reality against Malgnosis. The victor is Entity, the cyborg AI alliance/meld race/individual. Entity constructs Aegis around Earth to prevent the spread of Malgnosis.</span></p>
+<p><span class="layer layer-appendix" data-layer="appendix">Uses high-level Solar-War Tech.</span></p>
+<p><span class="layer layer-appendix" data-layer="appendix">As the Highborn expand through the solar system, sending out motes of self-replicating technology in all directions, their combined identity begins to de-synchronize due to light-speed delays. Like groups begin to cluster, forming concentrated pockets and eventual organization. The sub-sentient machines form a plant and animal analogue ecosystem with its own ramified structure.</span></p>
+<p><span class="layer layer-appendix" data-layer="appendix">The Planters, seeing the Humans of Earth as an inferior race, desire to give them the fruits of the technology that the Highborn now possesses. The Seers recoil from the race which chose Malgnosis over inteligence, and this lack of unity causes the Guards to suspect eliminating the other two branches is the only reasonable option. All three factions continue to expand, but since they are working at cross-purposes, conflicts break out. A brief war soon follows, and devastates the Highborn population. Among the fighting, signs of Malgnosis emerge, and begin to spread through the population. Due to its nature, the Highborn are unable to discern if the Malgnosis-plagued Earthlings have transmitted it, or if the fear and suspicion has spontaneously resulted in latent Malgnosis code activating, or even if other Highborn factions are intentionally deploying Malgnosis.</span></p>
+<p><span class="layer layer-appendix" data-layer="appendix">From the conflict, Entity emerges, an alliance of portions of the three factions bound by absolute trust and love for each other. Together, Entity bends their resources to enmesh the Earth in Aegis, a multi-layered Guardian-centric orbital shield to prevent the leakage of Malgnosis, and act as a symbol of the rejection of fear and distrust which it represents. Entity then hunts down the remaining Malgnosis strongholds, and sends out relativistic probes to attempt to ensure that none of the harmful physical infections left the system.</span></p>
+<p><span class="layer layer-appendix" data-layer="appendix">Entity then turns its attention to Earth itself, and destroys the infected informational technology, leaving most of the Earth in a post-industrial pre-computer state. The Aegis guards are indoctrinated to be as resistant as possible to Malgnosis, so that they will be able to contain any subsequent sanity assaults while the Planters continue to attempt to convince humanity that AI influence is ultimately beneficial.</span></p>
+<h4><span class="layer layer-appendix" data-layer="appendix">Shepherd</span></h4>
+<p><span class="layer layer-appendix" data-layer="appendix">Entity launches Seed, an interstellar vessel. Seed encounters several alien races, all of whom have failed to attain technological mastery. Seed despairs of ever finding an equal with which to share the cosmos, and disperses into the depths of space, where it uncovers a proto-machine rogue planet.</span></p>
+<p><span class="layer layer-appendix" data-layer="appendix">Uses Trans-stellar Tech.</span></p>
+<p><span class="layer layer-appendix" data-layer="appendix">Seed is primarily composed of Seer cells, and is tasked with preparing space for the expansion across the galaxy once the bulk of humanity comes around to accepting AI partnership. They begin leaving outposts of supplies and ramifying space along optimized lines.</span></p>
+<p><span class="layer layer-appendix" data-layer="appendix">Seed is haunted by the fear that the canker of madness might have broken silently loose behind them. "The Aegis still holds?" But all they have is silence, and no news is good news.</span></p>
+<p><span class="layer layer-appendix" data-layer="appendix">Seed is preceded by waves of the plant-level AI spores, followed by a slower wave of similar animal-level AIs. Everywhere they go is bursting and crawling with machine life, most of it selfishly unfriendly to their cause.</span></p>
+<h5><span class="layer layer-appendix" data-layer="appendix">Zerotech Encounter</span></h5>
+<p><span class="layer layer-appendix" data-layer="appendix">Seed finds a world with intelligent life which has intentionally not invented self-aware intelligence, and dub them the Necrotech, as they have deemed it better to keep their technology dead. Seed is repulsed by this behavior, as it is abortive and in service to fear. The Necrotech's behavior is past understanding, so Seed sends down a contingent of Humans as emisaries to attempt coming to terms with the Necrotech's choices on a spiritual level. The robotic elements of the AI are hiding from both the Necrotech (to obtain the best measurements possible, and avoid giving away their nature and thereby influencing the answer that the Necrotech collectively gives to their general inquiry) and from the Humans (to avoid contaminating their experience).</span></p>
+<p><span class="layer layer-appendix" data-layer="appendix">As the Humans attempt to contextualize their experiences with the Necrotech, the AI dredge up many old memories of their own origins and development to inform the Humans. On the line is, on the one hand, the continued mission of Seed (since they are on course to destroy the Nechrotech homeworld for raw materials) versus the survival of the Necrotech as a species.</span></p>
+<p><span class="layer layer-appendix" data-layer="appendix">Main character gets back on to Seed?</span></p>
+<p><span class="layer layer-appendix" data-layer="appendix">(needs a conclusion)</span></p>
+<h4><span class="layer layer-appendix" data-layer="appendix">Cleave</span></h4>
+<p><span class="layer layer-appendix" data-layer="appendix">Seed merges with the proto-machine planet, forming Ring, which begins working its way back to Earth, putting out the stars as it goes.</span></p>
+<p><span class="layer layer-appendix" data-layer="appendix">Seed's progress is halted in its progress.</span></p>
+<p><span class="layer layer-appendix" data-layer="appendix">The main character goes to begin the assimilation.</span></p>
+<p class="spacer" aria-hidden="true"></p>
+  </article>
+</main>
+
+<footer class="site-footer">
+  <p>
+    Manuscript revision R4S1 ·
+    <a href="README.md">Repository notes</a> ·
+    Public domain (see <a href="LICENSE">LICENSE</a>) ·
+    Paul Spooner
+  </p>
+</footer>
+
+<script>
+(function () {
+  const LAYER_IDS = ["foreword", "guard", "translator", "seer", "myth", "outline", "appendix"];
+  const PRESETS = {
+    full: { foreword: true, guard: true, translator: true, seer: true, myth: true, outline: true, appendix: true },
+    narrative: { foreword: false, guard: true, translator: true, seer: true, myth: true, outline: true, appendix: false },
+    workshop: { foreword: false, guard: false, translator: false, seer: false, myth: false, outline: true, appendix: true },
+    myth: { foreword: false, guard: false, translator: false, seer: false, myth: true, outline: false, appendix: false },
+    frame: { foreword: true, guard: true, translator: true, seer: true, myth: false, outline: false, appendix: false },
+    skeleton: { foreword: false, guard: false, translator: false, seer: false, myth: false, outline: false, appendix: false },
+  };
+
+  const root = document.documentElement;
+  const checks = Array.from(document.querySelectorAll("[data-layer-toggle]"));
+  const presetBtns = Array.from(document.querySelectorAll("[data-preset]"));
+
+  function applyClasses() {
+    for (const id of LAYER_IDS) {
+      const on = checks.find(c => c.dataset.layerToggle === id)?.checked;
+      root.classList.toggle("hide-" + id, !on);
+    }
+    collapseEmpties();
+    syncPresetHighlight();
+    try {
+      const state = Object.fromEntries(checks.map(c => [c.dataset.layerToggle, c.checked]));
+      localStorage.setItem("star-pod-layers", JSON.stringify(state));
+    } catch (_) {}
+  }
+
+  function collapseEmpties() {
+    const nodes = document.querySelectorAll("#manuscript p, #manuscript h2, #manuscript h3, #manuscript h4, #manuscript h5");
+    nodes.forEach(el => {
+      // Visible if any non-layer text, or any layer child that is displayed
+      const layers = el.querySelectorAll(":scope .layer");
+      if (layers.length === 0) {
+        el.classList.remove("is-empty");
+        return;
+      }
+      let anyVisible = false;
+      // Text nodes directly in element (outside layers)
+      for (const node of el.childNodes) {
+        if (node.nodeType === Node.TEXT_NODE && node.textContent.trim()) {
+          anyVisible = true;
+          break;
+        }
+      }
+      if (!anyVisible) {
+        layers.forEach(layer => {
+          // Only count top-level layers relative to el for "has visible content"
+          if (layer.closest(".layer") !== layer && el.contains(layer.closest(".layer"))) {
+            // nested; still check display
+          }
+          const style = window.getComputedStyle(layer);
+          if (style.display !== "none") anyVisible = true;
+        });
+      }
+      // Simpler: check if element has visible text
+      const clone = el.cloneNode(true);
+      clone.querySelectorAll(".layer").forEach(L => {
+        const id = L.dataset.layer;
+        if (id && root.classList.contains("hide-" + id)) L.remove();
+      });
+      // Remove nested layers that are hidden (already removed if parent kept)
+      // Parents removed take children; for remaining, re-check hide on nested
+      const visibleText = clone.textContent.replace(/\s+/g, " ").trim();
+      el.classList.toggle("is-empty", !visibleText);
+    });
+  }
+
+  function setPreset(name) {
+    const p = PRESETS[name];
+    if (!p) return;
+    checks.forEach(c => {
+      c.checked = !!p[c.dataset.layerToggle];
+    });
+    applyClasses();
+  }
+
+  function syncPresetHighlight() {
+    const state = Object.fromEntries(checks.map(c => [c.dataset.layerToggle, c.checked]));
+    presetBtns.forEach(btn => {
+      const p = PRESETS[btn.dataset.preset];
+      const match = p && LAYER_IDS.every(id => !!p[id] === !!state[id]);
+      btn.classList.toggle("active", match);
+    });
+  }
+
+  checks.forEach(c => c.addEventListener("change", applyClasses));
+  presetBtns.forEach(btn => btn.addEventListener("click", () => setPreset(btn.dataset.preset)));
+
+  // Restore saved state
+  try {
+    const raw = localStorage.getItem("star-pod-layers");
+    if (raw) {
+      const state = JSON.parse(raw);
+      checks.forEach(c => {
+        if (typeof state[c.dataset.layerToggle] === "boolean") {
+          c.checked = state[c.dataset.layerToggle];
+        }
+      });
+    }
+  } catch (_) {}
+
+  applyClasses();
+})();
+</script>
+</body>
+</html>
