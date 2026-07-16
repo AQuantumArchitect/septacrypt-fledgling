@@ -1,5 +1,27 @@
 # septacrypt-fledgling
 
+## ▶ Play STAR POD (fresh machine, five commands)
+
+*Star Sprout / Star Pod* (dudecon/RasiR4S1, public domain) runs here as a
+quantum-native story game: the manuscript is the play surface, the unwritten
+chapters are live superposition, and you write them by observing them.
+
+```bash
+git clone https://github.com/AQuantumArchitect/umwelt
+git clone https://github.com/AQuantumArchitect/septacrypt-core
+git clone https://github.com/AQuantumArchitect/septacrypt-fledgling
+cd septacrypt-fledgling
+python3 -m venv .venv && .venv/bin/pip install -e ../umwelt -e ../septacrypt-core -e ".[dev]"
+.venv/bin/python -m septacrypt_fledgling play web   # opens the playable manuscript
+```
+
+`/play` is the living-document reader (voice toggles intact) with the game
+woven in; `/simple` is a plain board. Terminal play: `docs/PLAYER_GUIDE.md`.
+How it works: `docs/STORY_PHYSICS.md`. Optional live-LLM narration:
+`NARRATOR_MODE=api ANTHROPIC_API_KEY=... ` before `play web`.
+
+---
+
 The **Fledgling host repo** — FL-core Phase 6 of umwelt's
 `docs/FLEDGELING_CORE.md` roadmap: the playable product loop that depends on
 the engines instead of living inside them.
