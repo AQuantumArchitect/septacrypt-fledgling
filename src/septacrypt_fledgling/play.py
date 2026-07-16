@@ -113,9 +113,11 @@ def _render_look(story: Dict[str, Any], attention: Optional[float] = None) -> No
             arrow = "" if kind == "written" else (
                 "↑" if lean > 0.15 else ("↓" if lean < -0.15 else "~"))
             parts.append(f"{k}{_INK[v]}{arrow}")
-        marker = "  <— next beat" if nxt and s["name"] == nxt["stage"] else ""
+        is_next = bool(nxt and s["name"] == nxt["stage"])
+        marker = "  <— next beat" if is_next else ""
+        # the circles hint only matters where the story is actually stuck
         loop = ("  (going in circles — the moment has come back around; read now)"
-                if s["kairos"]["looping"] else "")
+                if is_next and s["kairos"]["looping"] else "")
         print(f"  {s['name']:<10} {kind:<9} [{' '.join(parts)}]{marker}{loop}")
         if kind == "UNWRITTEN" and s["forbidden_masks"]:
             told = " · ".join(_mask_wants(s, m) for m in s["forbidden_masks"])

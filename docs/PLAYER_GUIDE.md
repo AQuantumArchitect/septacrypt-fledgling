@@ -58,17 +58,30 @@ Each unwritten strand shows two marks:
   `-`) — but a beat only completes once all three strands of its chapter are
   actually read.
 - **Lean** (the arrow) — which way the shimmering text is pointing RIGHT NOW:
-  `↑` a read will very likely come out `+`, `↓` very likely `-`, `~` a true
-  toss-up. **The lean is your dice preview.** It drifts in a slow circle
-  (a full loop takes roughly 36 drift-steps), so:
+  `↑` a read will likely come out `+`, `↓` likely `-`, `~` a true toss-up.
+  **The lean predicts; it does not guarantee** — every read is still dice.
+  Re-reading a strand is how you REWRITE it: each read re-inks it with the
+  fresh answer. The lean drifts in a slow circle (a full loop is roughly 36
+  drift-steps), so:
   - want a `+`? read while the arrow is `↑`.
   - want a `-` but the arrow says `↑`? `play wait 12` once or twice until
-    the arrow turns, THEN read. Never grind reads against the arrow.
+    the arrow turns, THEN read — don't waste reads fighting the arrow.
+  - **Some strands are fed by the story's own causality** (earlier chapters
+    push them) and their lean favors one side, rarely turning all the way.
+    Flipping one of those is the hardest move in the game: wait for `~` and
+    take the coin flip.
 
-`attention` is your reading budget (each read costs 1; you start with 100).
+`attention` is your reading budget (each read costs 1; you start with 100 —
+a clean run takes roughly 15–35 reads, so you have real slack).
 
-If the board says a chapter is **going in circles**, its shimmer has come
-back to where it was without any story progress — stop waiting and read.
+If the board says the next-beat chapter is **going in circles**, its shimmer
+has come back to where it was without any story progress — stop waiting and
+read.
+
+**Leave finished chapters alone.** Their strands keep shimmering, but their
+beats are banked. Reading one again is legal — it can also un-write a
+telling you needed; if you disturb one, read it back to what its beat
+demanded before the end.
 
 ## Staying safe
 
